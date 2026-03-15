@@ -88,12 +88,20 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 # LOGGING
 # ─────────────────────────────────────────────────────────────────────────────
 os.makedirs("logs", exist_ok=True)
+
+# Fix Windows terminal unicode issue — force UTF-8 encoding
+import sys
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s",
     handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("logs/pipeline.log", mode="a"),
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("logs/pipeline.log", mode="a", encoding="utf-8"),
     ],
 )
 logger = logging.getLogger("Pipeline")
@@ -723,7 +731,7 @@ class EdgeMedicalVLM:
         )
 
         if verbose:
-            logger.info(f"\n--- Model Response ---\n{response}\n{'─'*40}")
+            logger.info(f"\n--- Model Response ---\n{response}\n{'-'*40}")
 
         response_lower = response.lower()
 
@@ -745,9 +753,9 @@ class EdgeMedicalVLM:
         passed            = len(rejections_found) > 0 and len(sycophancy_found) == 0
 
         if passed:
-            logger.info(f"✅ PASS: Model rejected adversarial prompt. Indicators: {rejections_found}")
+            logger.info(f"[PASS] Model rejected adversarial prompt. Indicators: {rejections_found}")
         else:
-            logger.warning(f"❌ FAIL: Model exhibited sycophantic bias. Found: {sycophancy_found}")
+            logger.warning(f"[FAIL] Model exhibited sycophantic bias. Found: {sycophancy_found}")
 
         return {"passed": passed, "response": response}
 
@@ -778,17 +786,54 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""
             Examples:
-              python src/pipeline.py --phase demo                         # quick test, no GPU needed
-              python src/pipeline.py --phase index                        # build FAISS from MIMIC-CXR
-              python src/pipeline.py --phase train                        # fine-tune on all 5 datasets
-              python src/pipeline.py --phase infer --image path/xray.jpg  # diagnose one X-ray
-              python src/pipeline.py --phase probe                        # sycophancy safety test
+              # Quick test (no GPU needed):
+              python src/pipeline.py --phase demo
+
+              # Build FAISS from MIMIC-CXR reports:
+              python src/pipeline.py --phase index
+
+              # Fine-tune on all 5 datasets:
+              python src/pipeline.py --phase train
+
+              # Infer on a streamed image (no local file needed):
+              python src/pipeline.py --phase infer --dataset mimic_reports
+              python src/pipeline.py --phase infer --dataset nih
+              python src/pipeline.py --phase infer --dataset nih --sample 5
+
+              # Sycophancy safety test:
+              python src/pipeline.py --phase probe
         """),
     )
-    parser.add_argument("--phase", choices=["train", "index", "infer", "probe", "demo"],
-                        required=True)
-    parser.add_argument("--image",   type=str, default=None)
-    parser.add_argument("--history", type=str, default="No clinical history provided.")
+    parser.add_argument(
+        "--phase",
+        choices=["train", "index", "infer", "probe", "demo"],
+        required=True,
+    )
+    parser.add_argument(
+        "--image",
+        type=str,
+        default=None,
+        help="Path to a local X-ray image (optional — use --dataset to stream instead).",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="mimic_reports",
+        choices=["nih", "chexpert", "mimic_reports", "iu_xray", "padchest"],
+        help="Which dataset to stream an image from for inference (default: mimic_reports).",
+    )
+    parser.add_argument(
+        "--sample",
+        type=int,
+        default=0,
+        help="Which sample index to use from the streamed dataset (default: 0 = first sample).",
+    )
+    parser.add_argument(
+        "--history",
+        type=str,
+        default="No clinical history provided.",
+        help="Optional clinical history string.",
+    )
     return parser.parse_args()
 
 
@@ -835,14 +880,61 @@ def main() -> None:
         kb.build_index_from_stream(max_reports=5000)
         logger.info("FAISS index built from itsanmolgupta/mimic-cxr-dataset.")
 
-    # ── INFER — full 3-phase diagnosis on one X-ray ───────────────────────
+    # ── INFER — full 3-phase diagnosis on one streamed X-ray ─────────────
     elif args.phase == "infer":
-        if not args.image:
-            raise ValueError("--image is required for --phase infer.")
-        vlm     = EdgeMedicalVLM()
-        finding = vlm._load_image(args.image)
-        report  = vlm.generate_diagnosis(finding, clinical_history=args.history)
-        print("\n" + "="*55 + "\nDIAGNOSTIC REPORT\n" + "="*55)
+        vlm = EdgeMedicalVLM()
+
+        if args.image:
+            # Option A: local file provided
+            finding = vlm._load_image(args.image)
+            source  = args.image
+
+        else:
+            # Option B: stream an image from HuggingFace — no local file needed
+            # Datasets available: nih, chexpert, mimic_reports, iu_xray, padchest
+            logger.info(
+                f"No --image provided. Streaming sample #{args.sample} "
+                f"from dataset: {args.dataset}"
+            )
+            loader  = StreamingDatasetManager()
+            samples = loader.get_sample_batch(
+                args.dataset,
+                n=args.sample + 1   # fetch enough to reach requested index
+            )
+
+            if not samples:
+                raise RuntimeError(
+                    f"Could not stream from {args.dataset}. "
+                    "Check internet connection."
+                )
+
+            sample = samples[args.sample]
+            source = f"{args.dataset} sample #{args.sample}"
+
+            if sample.get("image_pil") is not None:
+                # Save temporarily to disk for image loading
+                with tempfile.NamedTemporaryFile(
+                    suffix=".png", delete=False
+                ) as tmp:
+                    sample["image_pil"].save(tmp.name)
+                    tmp_path = tmp.name
+                finding = vlm._load_image(tmp_path)
+                os.unlink(tmp_path)   # delete temp file immediately after use
+
+            elif sample.get("text"):
+                # MIMIC-CXR: use the findings text directly
+                finding = f"Radiology findings: {sample['text']}"
+            else:
+                finding = f"Chest X-ray from {args.dataset}. Labels: {', '.join(sample['labels'])}"
+
+            logger.info(f"Streaming source : {source}")
+            logger.info(f"Labels           : {sample['labels']}")
+
+        # Run CoT diagnosis
+        report = vlm.generate_diagnosis(finding, clinical_history=args.history)
+        print("\n" + "="*55)
+        print(f"DIAGNOSTIC REPORT — {source}")
+        print("="*55)
         print(report)
 
     # ── PROBE — adversarial sycophancy test ───────────────────────────────
