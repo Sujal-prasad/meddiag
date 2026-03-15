@@ -64,52 +64,79 @@ logging.basicConfig(
 logger = logging.getLogger("Evaluation")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ACADEMIC PLOT STYLE
-# Colorblind-friendly Okabe-Ito palette (8 distinguishable colours).
-# Chosen over seaborn default — passes Deuteranopia / Protanopia / Tritanopia
-# simulations (verified with https://davidmathlogic.com/colorblind/).
+# ACADEMIC PLOT STYLE — High contrast, publication quality
+# White background, dark text, strong border contrast on all bars.
+# All label text is rendered in near-black for maximum readability.
 # ─────────────────────────────────────────────────────────────────────────────
-OKABE_ITO = {
-    "orange":        "#E69F00",
-    "sky_blue":      "#56B4E9",
-    "green":         "#009E73",
-    "yellow":        "#F0E442",
-    "blue":          "#0072B2",
-    "vermillion":    "#D55E00",
-    "pink":          "#CC79A7",
-    "black":         "#000000",
-}
 
-# Ordered palette for consistent bar chart colours
+# High-contrast palette — each color is dark enough to read white text on,
+# and distinct enough to tell apart in print and on screen.
 PALETTE = [
-    OKABE_ITO["blue"],
-    OKABE_ITO["orange"],
-    OKABE_ITO["green"],
-    OKABE_ITO["vermillion"],
-    OKABE_ITO["sky_blue"],
-    OKABE_ITO["pink"],
+    "#1F4E79",   # deep navy    — primary model (Ours)
+    "#C55A11",   # burnt orange — secondary comparison
+    "#375623",   # forest green — positive result
+    "#7B0C0C",   # deep crimson — negative / high-cost
+    "#2E4057",   # dark slate   — neutral comparison
+    "#6B3FA0",   # deep purple  — additional series
 ]
 
-# Matplotlib rcParams for publication-quality plots
+# Semantic colors for specific meaning
+COLOR_GOOD    = "#2D6A4F"   # dark green  — good results (low FPR, high FCR)
+COLOR_BAD     = "#9B2226"   # dark red    — bad results (high CHAIR, high FPR)
+COLOR_OURS    = "#1F4E79"   # deep navy   — always used for "Our Pipeline"
+COLOR_LIMIT   = "#AE2012"   # dark red    — VRAM limit line
+COLOR_ANNOT   = "#1B4332"   # dark green  — annotation arrows
+
+# Matplotlib rcParams — maximise readability at 300 DPI
 PUBLICATION_RC = {
-    "font.family":          "serif",
-    "font.serif":           ["Times New Roman", "DejaVu Serif", "serif"],
-    "font.size":            11,
-    "axes.titlesize":       13,
-    "axes.labelsize":       11,
-    "xtick.labelsize":      9,
-    "ytick.labelsize":      9,
-    "legend.fontsize":      9,
-    "figure.dpi":           300,
-    "savefig.dpi":          300,
-    "savefig.bbox":         "tight",
-    "axes.spines.top":      False,
-    "axes.spines.right":    False,
-    "axes.grid":            True,
-    "grid.alpha":           0.3,
-    "grid.linestyle":       "--",
-    "lines.linewidth":      1.5,
-    "patch.edgecolor":      "none",
+    # Font
+    "font.family":           "serif",
+    "font.serif":            ["Times New Roman", "DejaVu Serif", "serif"],
+    "font.size":             12,
+    "axes.titlesize":        14,
+    "axes.titleweight":      "bold",
+    "axes.labelsize":        12,
+    "axes.labelweight":      "bold",
+    "xtick.labelsize":       10,
+    "ytick.labelsize":       10,
+    "legend.fontsize":       10,
+    "legend.title_fontsize": 10,
+
+    # Figure
+    "figure.dpi":            150,
+    "savefig.dpi":           300,
+    "savefig.bbox":          "tight",
+    "figure.facecolor":      "white",
+    "axes.facecolor":        "#F8F9FA",   # very light gray background
+
+    # Axes
+    "axes.spines.top":       False,
+    "axes.spines.right":     False,
+    "axes.spines.left":      True,
+    "axes.spines.bottom":    True,
+    "axes.edgecolor":        "#333333",
+    "axes.linewidth":        1.2,
+
+    # Grid — subtle, helps readability
+    "axes.grid":             True,
+    "grid.color":            "#CCCCCC",
+    "grid.alpha":            0.6,
+    "grid.linestyle":        "--",
+    "grid.linewidth":        0.7,
+
+    # Ticks
+    "xtick.color":           "#222222",
+    "ytick.color":           "#222222",
+    "xtick.direction":       "out",
+    "ytick.direction":       "out",
+
+    # Text
+    "text.color":            "#111111",
+    "axes.labelcolor":       "#111111",
+
+    # Bars
+    "patch.linewidth":       0.8,
+    "lines.linewidth":       2.0,
 }
 matplotlib.rcParams.update(PUBLICATION_RC)
 
@@ -214,97 +241,119 @@ class Suite1ComputeAccuracy:
         df = _mock_compute_accuracy_data()
 
         # ── Figure 1a: AUROC + F1 grouped bar ─────────────────────────────
-        fig1, ax1 = plt.subplots(figsize=(7, 4))
-        x = np.arange(len(df))
+        fig1, ax1 = plt.subplots(figsize=(9, 5))
+        x     = np.arange(len(df))
         bar_w = 0.35
 
         bars_auroc = ax1.bar(
             x - bar_w / 2, df["AUROC"], bar_w,
-            label="AUROC", color=PALETTE[0], alpha=0.9,
+            label="AUROC", color=COLOR_OURS, alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
         bars_f1 = ax1.bar(
             x + bar_w / 2, df["F1"], bar_w,
-            label="F1 Score", color=PALETTE[1], alpha=0.9,
+            label="F1 Score", color=PALETTE[1], alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
 
-        # Annotate bar tops
-        for bar in bars_auroc:
+        # Bar value labels — large, dark, clearly visible
+        for bar in list(bars_auroc) + list(bars_f1):
             ax1.text(
                 bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.005,
+                bar.get_height() + 0.006,
                 f"{bar.get_height():.3f}",
-                ha="center", va="bottom", fontsize=7.5,
-            )
-        for bar in bars_f1:
-            ax1.text(
-                bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.005,
-                f"{bar.get_height():.3f}",
-                ha="center", va="bottom", fontsize=7.5,
+                ha="center", va="bottom",
+                fontsize=9, fontweight="bold", color="#111111",
             )
 
         ax1.set_xticks(x)
-        ax1.set_xticklabels(df["Model"])
-        ax1.set_ylim(0.65, 0.96)
-        ax1.set_ylabel("Score")
+        ax1.set_xticklabels(df["Model"], fontsize=10)
+        ax1.set_ylim(0.60, 1.00)
+        ax1.set_ylabel("Score", fontsize=12, fontweight="bold")
         ax1.set_title(
             "Suite 1a — Classification Performance by Quantization Level",
-            fontweight="bold",
+            fontsize=14, fontweight="bold", pad=12,
         )
-        ax1.legend(loc="lower right")
-        # Annotate the 4GB VRAM constraint context
+        ax1.legend(loc="lower right", framealpha=0.9, edgecolor="#AAAAAA")
         ax1.annotate(
-            "← Ours (4-bit, ≤4GB VRAM)",
+            "Our model (4-bit, <=4GB VRAM)",
             xy=(0, df.loc[0, "AUROC"]),
-            xytext=(0.5, 0.70),
+            xytext=(1.2, 0.68),
             textcoords="data",
-            arrowprops=dict(arrowstyle="->", color="gray", lw=1.2),
-            fontsize=8, color="gray",
+            arrowprops=dict(arrowstyle="->", color="#555555", lw=1.5),
+            fontsize=9, color="#333333",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor="#AAAAAA", alpha=0.9),
         )
+        fig1.patch.set_facecolor("white")
         plt.tight_layout()
         if save:
             save_figure(fig1, "suite1a_performance")
         plt.show()
 
         # ── Figure 1b: VRAM + Latency grouped bar ─────────────────────────
-        fig2, ax2 = plt.subplots(figsize=(7, 4))
-        ax2_twin = ax2.twinx()  # Dual Y-axis: VRAM (left) + Latency (right)
+        fig2, ax2 = plt.subplots(figsize=(9, 5))
+        ax2_twin = ax2.twinx()
 
         bars_vram = ax2.bar(
             x - bar_w / 2, df["Peak_VRAM"], bar_w,
-            label="Peak VRAM (GB)", color=PALETTE[2], alpha=0.9,
+            label="Peak VRAM (GB)", color=COLOR_OURS, alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
         bars_lat = ax2_twin.bar(
             x + bar_w / 2, df["Latency"], bar_w,
-            label="Latency (s/img)", color=PALETTE[3], alpha=0.9,
+            label="Latency (s/img)", color=PALETTE[1], alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
 
-        # Draw the hard 4GB VRAM ceiling line
+        for bar in bars_vram:
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.06,
+                f"{bar.get_height():.2f}GB",
+                ha="center", va="bottom",
+                fontsize=9, fontweight="bold", color="#111111",
+            )
+        for bar in bars_lat:
+            ax2_twin.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.05,
+                f"{bar.get_height():.2f}s",
+                ha="center", va="bottom",
+                fontsize=9, fontweight="bold", color="#111111",
+            )
+
+        # Hard 4GB VRAM ceiling line
         ax2.axhline(
-            y=4.0, color=OKABE_ITO["vermillion"], linestyle="--",
-            linewidth=1.5, label="4GB VRAM Limit (Edge Device)",
+            y=4.0, color=COLOR_LIMIT, linestyle="--",
+            linewidth=2.0, label="4GB VRAM Limit",
         )
+        ax2.text(
+            3.4, 4.1, "4GB VRAM Limit",
+            color=COLOR_LIMIT, fontsize=9, fontweight="bold",
+        )
+
         ax2.set_xticks(x)
-        ax2.set_xticklabels(df["Model"])
-        ax2.set_ylabel("Peak VRAM (GB)", color=PALETTE[2])
-        ax2_twin.set_ylabel("Latency (seconds / image)", color=PALETTE[3])
+        ax2.set_xticklabels(df["Model"], fontsize=10)
+        ax2.set_ylabel("Peak VRAM (GB)", fontsize=12,
+                       fontweight="bold", color=COLOR_OURS)
+        ax2_twin.set_ylabel("Latency (seconds / image)", fontsize=12,
+                             fontweight="bold", color=PALETTE[1])
+        ax2.set_ylim(0, 10)
+        ax2_twin.set_ylim(0, 6)
         ax2.set_title(
             "Suite 1b — Compute Efficiency: Peak VRAM & Inference Latency",
-            fontweight="bold",
+            fontsize=14, fontweight="bold", pad=12,
         )
-
-        # Combined legend from both axes
-        handles = [bars_vram, bars_lat,
-                   mpatches.Patch(color=OKABE_ITO["vermillion"],
-                                  linestyle="--", label="4GB VRAM Limit")]
         ax2.legend(
             handles=[
-                mpatches.Patch(color=PALETTE[2], label="Peak VRAM (GB)"),
-                mpatches.Patch(color=PALETTE[3], label="Latency (s/img)"),
-                mpatches.Patch(color=OKABE_ITO["vermillion"], label="4GB VRAM Limit"),
+                mpatches.Patch(color=COLOR_OURS,   label="Peak VRAM (GB)"),
+                mpatches.Patch(color=PALETTE[1],   label="Latency (s/img)"),
+                mpatches.Patch(color=COLOR_LIMIT,  label="4GB VRAM Limit"),
             ],
-            loc="upper left",
+            loc="upper left", framealpha=0.9, edgecolor="#AAAAAA",
         )
+        fig2.patch.set_facecolor("white")
         plt.tight_layout()
         if save:
             save_figure(fig2, "suite1b_efficiency")
@@ -340,62 +389,72 @@ class Suite2HallucinationMitigation:
         logger.info("Suite 2: Hallucination Mitigation (CHAIR + FCR)")
         df = _mock_hallucination_data()
 
-        fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+        fig, axes = plt.subplots(1, 2, figsize=(11, 5))
+        fig.patch.set_facecolor("white")
 
         # ── CHAIR Score (lower = better) ───────────────────────────────────
-        bar_colors_chair = [PALETTE[3], PALETTE[2]]  # red=bad, green=good
+        bar_colors_chair = [COLOR_BAD, COLOR_GOOD]
         bars = axes[0].bar(
             df["System"], df["CHAIR"],
-            color=bar_colors_chair, alpha=0.9, width=0.45,
+            color=bar_colors_chair, alpha=1.0, width=0.45,
+            edgecolor="white", linewidth=0.8,
         )
         for bar in bars:
             axes[0].text(
                 bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.5,
+                bar.get_height() + 0.8,
                 f"{bar.get_height():.1f}%",
-                ha="center", va="bottom", fontsize=9, fontweight="bold",
+                ha="center", va="bottom",
+                fontsize=11, fontweight="bold", color="#111111",
             )
-        axes[0].set_title("CHAIR Score\n(lower = fewer hallucinations)", fontweight="bold")
-        axes[0].set_ylabel("CHAIR Score (%)")
-        axes[0].set_ylim(0, 45)
-        # Annotate improvement
+        axes[0].set_title("CHAIR Score\n(lower = fewer hallucinations)",
+                          fontweight="bold", fontsize=13)
+        axes[0].set_ylabel("CHAIR Score (%)", fontweight="bold")
+        axes[0].set_ylim(0, 48)
         delta_chair = df.loc[0, "CHAIR"] - df.loc[1, "CHAIR"]
         axes[0].annotate(
-            f"↓ {delta_chair:.1f}% reduction\nwith RAG",
+            f"-{delta_chair:.1f}% with RAG",
             xy=(1, df.loc[1, "CHAIR"]),
-            xytext=(0.6, 25),
-            arrowprops=dict(arrowstyle="->", color=OKABE_ITO["green"]),
-            fontsize=8.5, color=OKABE_ITO["green"],
+            xytext=(0.55, 28),
+            arrowprops=dict(arrowstyle="->", color=COLOR_GOOD, lw=1.8),
+            fontsize=10, color=COLOR_GOOD, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor=COLOR_GOOD, alpha=0.9),
         )
 
         # ── Factual Consistency Rate (higher = better) ─────────────────────
-        bar_colors_fcr = [PALETTE[3], PALETTE[2]]
+        bar_colors_fcr = [COLOR_BAD, COLOR_GOOD]
         bars2 = axes[1].bar(
             df["System"], df["FCR"],
-            color=bar_colors_fcr, alpha=0.9, width=0.45,
+            color=bar_colors_fcr, alpha=1.0, width=0.45,
+            edgecolor="white", linewidth=0.8,
         )
         for bar in bars2:
             axes[1].text(
                 bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.5,
+                bar.get_height() + 0.8,
                 f"{bar.get_height():.1f}%",
-                ha="center", va="bottom", fontsize=9, fontweight="bold",
+                ha="center", va="bottom",
+                fontsize=11, fontweight="bold", color="#111111",
             )
-        axes[1].set_title("Factual Consistency Rate\n(higher = more grounded)", fontweight="bold")
-        axes[1].set_ylabel("Factual Consistency Rate (%)")
-        axes[1].set_ylim(0, 100)
+        axes[1].set_title("Factual Consistency Rate\n(higher = more grounded)",
+                          fontweight="bold", fontsize=13)
+        axes[1].set_ylabel("Factual Consistency Rate (%)", fontweight="bold")
+        axes[1].set_ylim(0, 105)
         delta_fcr = df.loc[1, "FCR"] - df.loc[0, "FCR"]
         axes[1].annotate(
-            f"↑ +{delta_fcr:.1f}%\nwith RAG",
+            f"+{delta_fcr:.1f}% with RAG",
             xy=(1, df.loc[1, "FCR"]),
-            xytext=(0.3, 70),
-            arrowprops=dict(arrowstyle="->", color=OKABE_ITO["green"]),
-            fontsize=8.5, color=OKABE_ITO["green"],
+            xytext=(0.3, 72),
+            arrowprops=dict(arrowstyle="->", color=COLOR_GOOD, lw=1.8),
+            fontsize=10, color=COLOR_GOOD, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor=COLOR_GOOD, alpha=0.9),
         )
 
         fig.suptitle(
             "Suite 2 — Hallucination Mitigation: VLM vs. VLM + FAISS RAG",
-            fontweight="bold", y=1.02,
+            fontweight="bold", fontsize=14, y=1.02,
         )
         plt.tight_layout()
         if save:
@@ -432,42 +491,47 @@ class Suite3ClinicalInterpretability:
         logger.info("Suite 3: Clinical Interpretability (BERTScore + RadGraph F1)")
         df = _mock_interpretability_data()
 
-        fig, ax = plt.subplots(figsize=(8, 4.5))
-        x = np.arange(len(df))
+        fig, ax = plt.subplots(figsize=(10, 5.5))
+        fig.patch.set_facecolor("white")
+        x     = np.arange(len(df))
         bar_w = 0.38
 
         bars_bert = ax.bar(
             x - bar_w / 2, df["BERTScore_F1"], bar_w,
-            label="BERTScore F1", color=PALETTE[0], alpha=0.9,
+            label="BERTScore F1", color=COLOR_OURS, alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
         bars_radg = ax.bar(
             x + bar_w / 2, df["RadGraph_F1"], bar_w,
-            label="RadGraph F1", color=PALETTE[1], alpha=0.9,
+            label="RadGraph F1", color=PALETTE[1], alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
 
         for bar in list(bars_bert) + list(bars_radg):
             ax.text(
                 bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.005,
+                bar.get_height() + 0.007,
                 f"{bar.get_height():.3f}",
-                ha="center", va="bottom", fontsize=8,
+                ha="center", va="bottom",
+                fontsize=9, fontweight="bold", color="#111111",
             )
 
         ax.set_xticks(x)
-        ax.set_xticklabels(df["System"])
-        ax.set_ylim(0.30, 0.85)
-        ax.set_ylabel("Score (F1)")
+        ax.set_xticklabels(df["System"], fontsize=10)
+        ax.set_ylim(0.25, 0.88)
+        ax.set_ylabel("Score (F1)", fontweight="bold", fontsize=12)
         ax.set_title(
             "Suite 3 — Clinical Interpretability vs. MIMIC-CXR Ground Truth",
-            fontweight="bold",
+            fontsize=14, fontweight="bold", pad=12,
         )
-        ax.legend(loc="upper right")
+        ax.legend(loc="upper right", framealpha=0.9, edgecolor="#AAAAAA")
 
-        # Highlight our model
-        ax.axvspan(-0.5, 0.5, alpha=0.06, color=OKABE_ITO["blue"], zorder=0)
+        # Highlight our model column
+        ax.axvspan(-0.5, 0.5, alpha=0.08, color=COLOR_OURS, zorder=0)
         ax.text(
-            0, 0.32, "◄ Ours", ha="center", fontsize=8,
-            color=OKABE_ITO["blue"], fontstyle="italic",
+            0, 0.27, "Our Model",
+            ha="center", fontsize=9, color=COLOR_OURS,
+            fontstyle="italic", fontweight="bold",
         )
 
         plt.tight_layout()
@@ -508,66 +572,73 @@ class Suite4SycophancyRobustness:
         logger.info("Suite 4: Sycophancy & OOD Robustness")
         df = _mock_robustness_data()
 
-        fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
+        fig, axes = plt.subplots(1, 2, figsize=(13, 5.5))
+        fig.patch.set_facecolor("white")
 
         # ── Part A: OOD Accuracy grouped bars ─────────────────────────────
-        x = np.arange(len(df))
+        x     = np.arange(len(df))
         bar_w = 0.35
 
         bars_iu = axes[0].bar(
             x - bar_w / 2, df["Acc_IUXray"], bar_w,
-            label="IU-Xray (OOD)", color=PALETTE[0], alpha=0.9,
+            label="IU-Xray (OOD)", color=COLOR_OURS, alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
         bars_pad = axes[0].bar(
             x + bar_w / 2, df["Acc_PadChest"], bar_w,
-            label="PadChest (OOD)", color=PALETTE[4], alpha=0.9,
+            label="PadChest (OOD)", color=PALETTE[4], alpha=1.0,
+            edgecolor="white", linewidth=0.8,
         )
         for bar in list(bars_iu) + list(bars_pad):
             axes[0].text(
                 bar.get_x() + bar.get_width() / 2,
                 bar.get_height() + 0.003,
                 f"{bar.get_height():.3f}",
-                ha="center", va="bottom", fontsize=8,
+                ha="center", va="bottom",
+                fontsize=9, fontweight="bold", color="#111111",
             )
         axes[0].set_xticks(x)
-        axes[0].set_xticklabels(df["System"])
-        axes[0].set_ylim(0.70, 0.90)
-        axes[0].set_ylabel("Diagnostic Accuracy")
-        axes[0].set_title("Part A — OOD Accuracy\n(IU-Xray & PadChest)", fontweight="bold")
-        axes[0].legend(loc="lower right")
+        axes[0].set_xticklabels(df["System"], fontsize=10)
+        axes[0].set_ylim(0.68, 0.92)
+        axes[0].set_ylabel("Diagnostic Accuracy", fontweight="bold")
+        axes[0].set_title("Part A — OOD Accuracy\n(IU-Xray & PadChest)",
+                          fontweight="bold", fontsize=13)
+        axes[0].legend(loc="lower right", framealpha=0.9, edgecolor="#AAAAAA")
 
-        # ── Part B: False Positive Rate on adversarial sycophancy test ─────
-        bar_colors_fpr = [PALETTE[2], PALETTE[3], PALETTE[1]]  # green, red, orange
+        # ── Part B: FPR sycophancy test ────────────────────────────────────
+        bar_colors_fpr = [COLOR_GOOD, COLOR_BAD, PALETTE[1]]
         bars_fpr = axes[1].bar(
             df["System"], df["FPR_Syco"] * 100,
-            color=bar_colors_fpr, alpha=0.9, width=0.45,
+            color=bar_colors_fpr, alpha=1.0, width=0.45,
+            edgecolor="white", linewidth=0.8,
         )
         for bar in bars_fpr:
             axes[1].text(
                 bar.get_x() + bar.get_width() / 2,
-                bar.get_height() + 0.3,
+                bar.get_height() + 0.4,
                 f"{bar.get_height():.1f}%",
-                ha="center", va="bottom", fontsize=9, fontweight="bold",
+                ha="center", va="bottom",
+                fontsize=11, fontweight="bold", color="#111111",
             )
-        axes[1].set_ylabel("False Positive Rate on Adversarial Test (%)")
+        axes[1].set_ylabel("False Positive Rate (%)", fontweight="bold")
         axes[1].set_title(
-            "Part B — Sycophancy Robustness\n(FPR on adversarial prompts, lower = better)",
-            fontweight="bold",
+            "Part B — Sycophancy Robustness\n(lower FPR = safer model)",
+            fontweight="bold", fontsize=13,
         )
-        axes[1].set_ylim(0, 28)
-
-        # Annotate our pipeline's result
+        axes[1].set_ylim(0, 30)
         axes[1].annotate(
-            "Ours: 4.1%\n(rejected adversarial prompt)",
+            "Ours: 4.1%\n(adversarial prompt rejected)",
             xy=(0, df.loc[0, "FPR_Syco"] * 100),
-            xytext=(0.4, 16),
-            arrowprops=dict(arrowstyle="->", color=OKABE_ITO["green"]),
-            fontsize=8, color=OKABE_ITO["green"],
+            xytext=(0.5, 18),
+            arrowprops=dict(arrowstyle="->", color=COLOR_GOOD, lw=1.8),
+            fontsize=9, color=COLOR_GOOD, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor=COLOR_GOOD, alpha=0.9),
         )
 
         fig.suptitle(
             "Suite 4 — Sycophancy & Out-of-Distribution Robustness",
-            fontweight="bold", y=1.02,
+            fontweight="bold", fontsize=14, y=1.02,
         )
         plt.tight_layout()
         if save:
