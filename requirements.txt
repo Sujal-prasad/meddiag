@@ -1,0 +1,103 @@
+# =============================================================================
+# requirements.txt
+# Medical Diagnostic Pipeline — QLoRA 3B + FAISS RAG + Chain-of-Thought
+#
+# INSTALL ORDER:
+#   Step 1 — Install PyTorch (pick ONE based on your GPU):
+#
+#   CUDA 12.1 (RTX 30xx / 40xx):
+#     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+#   CUDA 11.8:
+#     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+#   No GPU / not sure:
+#     pip install torch torchvision torchaudio
+#
+#   Step 2 — Install everything else:
+#     pip install -r requirements.txt
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CORE DEEP LEARNING FRAMEWORK
+# Install torch manually above BEFORE running pip install -r requirements.txt
+# These loose pins just prevent pip from downgrading an already installed torch
+# ─────────────────────────────────────────────────────────────────────────────
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HUGGING FACE ECOSYSTEM
+# ─────────────────────────────────────────────────────────────────────────────
+transformers>=4.38.0
+peft>=0.9.0
+accelerate>=0.27.0
+bitsandbytes>=0.42.0
+tokenizers>=0.15.0
+safetensors>=0.4.0
+huggingface-hub>=0.21.0
+
+# Streaming dataset support — zero local storage
+datasets>=2.17.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CPU-OPTIMISED VECTOR RETRIEVAL
+# ─────────────────────────────────────────────────────────────────────────────
+faiss-cpu>=1.7.4
+sentence-transformers>=2.5.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# IMAGE PROCESSING
+# ─────────────────────────────────────────────────────────────────────────────
+Pillow>=10.0.0
+opencv-python-headless>=4.8.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DATA HANDLING
+# ─────────────────────────────────────────────────────────────────────────────
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EVALUATION METRICS
+# ─────────────────────────────────────────────────────────────────────────────
+bert-score>=0.3.13
+rouge-score>=0.1.2
+nltk>=3.8.0
+
+# RadGraph requires Java 11+ on Windows
+# Download Java: https://www.java.com/en/download/
+# Then install: pip install radgraph
+radgraph>=0.1.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISUALISATION
+# ─────────────────────────────────────────────────────────────────────────────
+matplotlib>=3.7.0
+seaborn>=0.13.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UTILITIES
+# ─────────────────────────────────────────────────────────────────────────────
+tqdm>=4.65.0
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
+loguru>=0.7.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MEDICAL DATA HANDLING
+# ─────────────────────────────────────────────────────────────────────────────
+pydicom>=2.4.0
+SimpleITK>=2.3.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEVELOPMENT & TESTING
+# ─────────────────────────────────────────────────────────────────────────────
+pytest>=8.0.0
+pytest-cov>=4.1.0
+black>=24.0.0
+isort>=5.13.0
+mypy>=1.8.0

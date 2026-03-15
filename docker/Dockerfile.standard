@@ -1,0 +1,104 @@
+# =============================================================================
+# Dockerfile.standard
+# Target: High-compute workstation or server (16GB+ VRAM)
+#         Used for: full fine-tuning, batch evaluation, ablation studies
+#
+# Differences from Dockerfile.edge:
+#  • NVIDIA CUDA base image — includes full CUDA toolkit for faster compilation
+#  • Full precision (bfloat16) fine-tuning allowed
+#  • No CPU thread restrictions (sufficient thermal headroom)
+#  • Jupyter Lab included for interactive experimentation in notebooks/
+#  • W&B integration enabled for experiment tracking
+#
+# Build:
+#   docker build -f docker/Dockerfile.standard -t meddiag:standard .
+# Run:
+#   docker run --gpus all meddiag:standard python src/pipeline.py --phase train
+# =============================================================================
+
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS base
+
+LABEL maintainer="Medical Diagnostic Pipeline"
+LABEL description="Standard high-compute image — 16GB+ VRAM workstation"
+LABEL version="1.0.0"
+
+# ── Environment variables ─────────────────────────────────────────────────────
+# Expandable segments still helps with fragmentation even on 16GB+
+ENV PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
+
+# Allow full CPU parallelism on a workstation
+ENV OMP_NUM_THREADS=16
+ENV MKL_NUM_THREADS=16
+ENV TOKENIZERS_PARALLELISM=true
+
+ENV HF_HOME=/app/cache/huggingface
+ENV TRANSFORMERS_CACHE=/app/cache/huggingface
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ── System dependencies ────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    python3.11-venv \
+    build-essential \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    git \
+    curl \
+    wget \
+    vim \
+    htop \
+    nvtop \
+    && rm -rf /var/lib/apt/lists/*
+
+# Use python3.11 as default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
+    && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+
+WORKDIR /app
+COPY requirements.txt .
+
+RUN pip install --upgrade pip setuptools wheel --no-cache-dir
+
+# PyTorch with CUDA 12.1
+RUN pip install --no-cache-dir \
+    torch==2.1.2+cu121 \
+    torchvision==0.16.2+cu121 \
+    torchaudio==2.1.2+cu121 \
+    --extra-index-url https://download.pytorch.org/whl/cu121
+
+# All remaining dependencies including dev/experiment tools
+RUN grep -v "^torch" requirements.txt | pip install --no-cache-dir -r /dev/stdin
+
+# Additional tools for full training workflow
+RUN pip install --no-cache-dir \
+    jupyterlab==4.0.12 \
+    wandb==0.16.4 \
+    tensorboard==2.15.2 \
+    ipywidgets==8.1.2
+
+COPY . /app/
+
+RUN mkdir -p \
+    /app/data/raw \
+    /app/data/processed \
+    /app/data/embeddings \
+    /app/models/qlora_adapters \
+    /app/models/faiss_index \
+    /app/logs \
+    /app/cache/huggingface \
+    /app/experiments/figures
+
+EXPOSE 8888  # JupyterLab port
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD python -c "import torch; assert torch.cuda.is_available(), 'CUDA unavailable'; print('OK')" || exit 1
+
+# Default: start JupyterLab for interactive work; override for training
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]

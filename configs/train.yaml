@@ -1,0 +1,57 @@
+# configs/train.yaml
+# Training hyperparameters — optimised for RTX 3050 / 4GB VRAM
+#
+# Estimated training time: ~1–2 hours (down from 15 hours)
+# All 5 datasets used: 200 samples each = 1000 total steps
+
+model:
+  base_model_id: "meta-llama/Llama-3.2-3B-Instruct"
+  adapter_path:  "models/qlora_adapters/meddiag_lora"
+
+quantization:
+  load_in_4bit:              true
+  bnb_4bit_quant_type:       "nf4"
+  bnb_4bit_use_double_quant: true
+
+lora:
+  r:            8
+  lora_alpha:   16
+  lora_dropout: 0.05
+  target_modules:
+    - q_proj
+    - v_proj
+
+training:
+  num_train_epochs:             1
+  per_device_train_batch_size:  1
+  gradient_accumulation_steps:  8
+  learning_rate:                2e-4
+  bf16:                         true
+  gradient_checkpointing:       true
+  max_seq_length:               128
+  logging_steps:                5
+  save_steps:                   100
+  save_total_limit:             2
+  dataloader_num_workers:       0
+  output_dir: "models/qlora_adapters/meddiag_lora"
+
+streaming:
+  datasets:
+    - name: "nih"
+      samples: 200
+    - name: "chexpert"
+      samples: 200
+    - name: "iu_xray"
+      samples: 200
+    - name: "mimic_reports"
+      samples: 200
+    - name: "padchest"
+      samples: 200
+  interleaved: true
+  rag_reports:  2000
+
+faiss:
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  top_k:           3
+  chunk_size:      512
+  chunk_overlap:   64

@@ -1,0 +1,150 @@
+# =============================================================================
+# docker-compose.yml
+# Orchestrates both edge and standard environments.
+#
+# Usage:
+#   # Start edge inference service (RTX 3050 target):
+#   docker compose up meddiag-edge
+#
+#   # Start full training environment with JupyterLab:
+#   docker compose up meddiag-standard
+#
+#   # Run evaluation suites:
+#   docker compose run --rm meddiag-edge python experiments/evaluate.py --suite all --save
+#
+#   # Override the GPU device index (e.g., if you have multiple GPUs):
+#   GPU_ID=1 docker compose up meddiag-standard
+# =============================================================================
+version: "3.9"
+
+# ── Shared volume definitions ─────────────────────────────────────────────────
+volumes:
+  # Dataset storage — shared between both containers
+  meddiag_data:
+    driver: local
+  # HuggingFace model cache — prevents re-downloading across rebuilds
+  hf_cache:
+    driver: local
+  # FAISS index + LoRA adapters — shared between training and inference
+  meddiag_models:
+    driver: local
+
+# ── Named network ─────────────────────────────────────────────────────────────
+networks:
+  meddiag_net:
+    driver: bridge
+
+# ── Service definitions ───────────────────────────────────────────────────────
+services:
+
+  # ── Edge inference service (RTX 3050 / 4GB VRAM) ─────────────────────────
+  meddiag-edge:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.edge
+    image: meddiag:edge
+    container_name: meddiag_edge
+
+    # GPU device assignment: pass only device 0 (the RTX 3050)
+    # Override with: GPU_ID=1 docker compose up meddiag-edge
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_ID:-0}"]
+              capabilities: [gpu]
+        limits:
+          # Hard memory limit — prevents host OOM on edge hardware
+          memory: 8g
+
+    # Environment: enforce strict 4GB VRAM behaviour
+    environment:
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512
+      - OMP_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+      - TOKENIZERS_PARALLELISM=false
+      - HF_HOME=/cache/huggingface
+      - TRANSFORMERS_CACHE=/cache/huggingface
+
+    # Mount datasets and model cache as volumes
+    volumes:
+      - meddiag_data:/app/data
+      - meddiag_models:/app/models
+      - hf_cache:/cache/huggingface
+      # Mount source for live code changes without rebuilding
+      - ../src:/app/src:ro
+      - ../experiments:/app/experiments:ro
+
+    networks:
+      - meddiag_net
+
+    # Restart on failure (for long inference jobs)
+    restart: on-failure:3
+
+    # Override CMD for inference
+    command: ["python", "src/pipeline.py", "--help"]
+
+    # Healthcheck: verify CUDA + FAISS availability
+    healthcheck:
+      test: ["CMD", "python", "-c", "import torch; import faiss; print('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ── Standard training service (16GB+ VRAM workstation) ───────────────────
+  meddiag-standard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.standard
+    image: meddiag:standard
+    container_name: meddiag_standard
+
+    # Pass all available GPUs for multi-GPU training
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    environment:
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - OMP_NUM_THREADS=16
+      - MKL_NUM_THREADS=16
+      - TOKENIZERS_PARALLELISM=true
+      - HF_HOME=/cache/huggingface
+      - TRANSFORMERS_CACHE=/cache/huggingface
+      # W&B API key (set in .env file — never hardcode secrets)
+      - WANDB_API_KEY=${WANDB_API_KEY:-""}
+
+    volumes:
+      - meddiag_data:/app/data
+      - meddiag_models:/app/models
+      - hf_cache:/cache/huggingface
+      - ../:/app  # Full project mount for development
+      - ../notebooks:/app/notebooks
+
+    ports:
+      # JupyterLab UI
+      - "8888:8888"
+      # TensorBoard
+      - "6006:6006"
+
+    networks:
+      - meddiag_net
+
+    command: >
+      jupyter lab --ip=0.0.0.0 --port=8888
+      --no-browser --allow-root
+      --NotebookApp.token=''
+      --NotebookApp.password=''
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import torch; assert torch.cuda.is_available()"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 120s

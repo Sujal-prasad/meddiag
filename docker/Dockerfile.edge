@@ -1,0 +1,111 @@
+# =============================================================================
+# Dockerfile.edge
+# Target: NVIDIA RTX 3050 (4GB VRAM) @ strict 55W TGP
+#         Edge deployment for resource-constrained rural clinics
+#
+# Design decisions:
+#  • python:3.11-slim-bookworm base: Debian Bookworm slim (~120MB) vs.
+#    nvidia/cuda images (~4GB+). CUDA runtime is included via pip wheels.
+#  • Pinned PyTorch CUDA 12.1 wheels — Ampere architecture native.
+#  • PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True: prevents CUDA
+#    allocator from fragmenting VRAM across multiple small allocations,
+#    critical on 4GB devices.
+#  • OMP/MKL thread limits: prevents CPU threads from competing with the
+#    CUDA stream on the low-TGP 55W envelope.
+#  • No Jupyter / dev tooling — production-only image.
+#
+# Build:
+#   docker build -f docker/Dockerfile.edge -t meddiag:edge .
+# Run:
+#   docker run --gpus '"device=0"' --memory=8g meddiag:edge python src/pipeline.py --phase infer --image /data/xray.jpg
+# =============================================================================
+
+FROM python:3.11-slim-bookworm AS base
+
+# ── System labels ─────────────────────────────────────────────────────────────
+LABEL maintainer="Medical Diagnostic Pipeline"
+LABEL description="Edge deployment image — RTX 3050 4GB VRAM @ 55W TGP"
+LABEL version="1.0.0"
+
+# ── Environment variables ─────────────────────────────────────────────────────
+# CRITICAL: expandable_segments prevents VRAM fragmentation on 4GB devices.
+# Without this, PyTorch may fail to allocate a contiguous 2.5GB block
+# even when 3GB appears free.
+ENV PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True,max_split_size_mb:512"
+
+# Limit CPU parallelism — prevents the 55W TGP from being exceeded
+# by CPU-side operations (tokenization, FAISS, NumPy) running in parallel
+# with the CUDA stream.
+ENV OMP_NUM_THREADS=4
+ENV MKL_NUM_THREADS=4
+ENV TOKENIZERS_PARALLELISM=false
+
+# HuggingFace cache in /app/cache — can be mounted as a volume
+ENV HF_HOME=/app/cache/huggingface
+ENV TRANSFORMERS_CACHE=/app/cache/huggingface
+
+# Python: don't write .pyc, don't buffer stdout
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# ── System dependencies ────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Working directory ─────────────────────────────────────────────────────────
+WORKDIR /app
+COPY requirements.txt .
+
+# ── Install Python dependencies (edge-optimised) ─────────────────────────────
+# Upgrade pip first to handle newer metadata formats
+RUN pip install --upgrade pip setuptools wheel --no-cache-dir
+
+# Install PyTorch CUDA 12.1 wheels — Ampere native, pinned for stability
+# We install torch separately first to ensure correct CUDA wheel selection
+# before other packages pull in CPU-only versions as transitive dependencies.
+RUN pip install --no-cache-dir \
+    torch==2.1.2+cu121 \
+    torchvision==0.16.2+cu121 \
+    torchaudio==2.1.2+cu121 \
+    --extra-index-url https://download.pytorch.org/whl/cu121
+
+# Install remaining dependencies from requirements.txt
+# Exclude torch/torchvision/torchaudio (already installed above)
+RUN grep -v "^torch" requirements.txt | pip install --no-cache-dir -r /dev/stdin
+
+# ── Copy application source ───────────────────────────────────────────────────
+COPY src/ /app/src/
+COPY experiments/ /app/experiments/
+COPY scripts/ /app/scripts/
+
+# ── Create necessary runtime directories ──────────────────────────────────────
+RUN mkdir -p \
+    /app/data/raw \
+    /app/data/processed \
+    /app/data/embeddings \
+    /app/models/qlora_adapters \
+    /app/models/faiss_index \
+    /app/logs \
+    /app/cache/huggingface
+
+# ── Non-root user for security ─────────────────────────────────────────────────
+# Running as root in a medical AI container is a security risk.
+RUN useradd --create-home --shell /bin/bash meddiag
+RUN chown -R meddiag:meddiag /app
+USER meddiag
+
+# ── Health check ──────────────────────────────────────────────────────────────
+# Verifies Python imports work and FAISS is loadable
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import torch; import faiss; print('OK')" || exit 1
+
+# ── Default command ───────────────────────────────────────────────────────────
+CMD ["python", "src/pipeline.py", "--help"]

@@ -1,0 +1,44 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Model weights — too large for GitHub (use HuggingFace Hub instead)
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Datasets — all streamed, never stored locally
+data/raw/
+data/processed/
+data/embeddings/
+
+# Logs
+logs/
+*.log
+
+# Secrets — NEVER commit these
+.env
+*.env
+kaggle.json
+
+# Experiment outputs — regenerate with evaluate.py
+experiments/figures/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Keep empty folders
+!**/.gitkeep
