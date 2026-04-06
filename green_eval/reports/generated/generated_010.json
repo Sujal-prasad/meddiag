@@ -1,0 +1,9 @@
+{
+  "id": "010",
+  "dataset": "nih",
+  "labels": [
+    "NORMAL"
+  ],
+  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors mentioned in the clinical evidence.\n\nStep 2: Normal mediastinal contours suggest that there is no apparent compression or invasion by a mass or fluid collection affecting the mediastinum.\n\nStep 3: Aortic knob calcifications do not directly relate to the current primary concern but indicate overall cardiovascular health.\n\nStep 4: No signs of pneumothorax, pleural effusion, or focal consolidation are present.\n\nStep 5: All views taken show consistent results without any new information.\n\nStep 6: Combining all observations leads to a comprehensive picture.\n\nStep 7: Synthesizing all points indicates that the patient's condition appears stable",
+  "latency_s": 94.1
+}
