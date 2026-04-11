@@ -219,7 +219,7 @@ class InferenceConfig:
     temperature:        float = 0.1
     top_p:              float = 0.9
     repetition_penalty: float = 1.15
-    vram_limit_gb:      float = 4.0
+    vram_limit_gb:      float = 8.0    # RTX 5060 8GB (was 4.0 for RTX 3050)
 
 
 @dataclass
@@ -274,21 +274,21 @@ class FAISSKnowledgeBase:
         self.cfg = cfg or FAISSConfig()
         logger.info("Initializing CPU-bound FAISS Knowledge Base...")
 
-        # Suppress the benign "embeddings.position_ids | UNEXPECTED" warning
-        # from all-MiniLM-L6-v2. Root cause: _prev_level is 0 (NOTSET) when
-        # no level has been explicitly set, so restoring to 0 makes the logger
-        # inherit from root (INFO) — WARNING still bleeds through via parent.
-        # Fix: always restore to WARNING, not to the stored NOTSET value.
+        # Suppress the benign "embeddings.position_ids | UNEXPECTED" warning.
+        # The report comes from transformers' model loading internals, not ST itself.
         import logging as _logging
         _st_logger  = _logging.getLogger("sentence_transformers")
-        _st_logger.setLevel(_logging.ERROR)   # suppress during load
+        _tf_logger  = _logging.getLogger("transformers.modeling_utils")
+        _st_logger.setLevel(_logging.ERROR)
+        _tf_logger.setLevel(_logging.ERROR)
 
         self.embedder = SentenceTransformer(
             self.cfg.embedding_model,
             device=self.cfg.device,
             trust_remote_code=False,
         )
-        _st_logger.setLevel(_logging.WARNING)  # restore to WARNING (not NOTSET)
+        _st_logger.setLevel(_logging.WARNING)
+        _tf_logger.setLevel(_logging.WARNING)  # restore both
 
         self.index          = faiss.IndexFlatL2(self.cfg.embedding_dim)
         self.chunk_metadata: list[dict] = []
@@ -523,7 +523,7 @@ class QLoRAModelManager:
         self.tokenizer.model_max_length = 512
 
         # Hard VRAM ceiling — 3.5GB leaves 500MB headroom on 4GB card
-        max_mem = {0: "3500MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
+        max_mem = {0: "7000MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
 
         base_model = AutoModelForCausalLM.from_pretrained(
             self.infer_cfg.base_model_id,
@@ -557,7 +557,7 @@ class QLoRAModelManager:
             torch.cuda.reset_peak_memory_stats(0)
 
         bnb_config = self.quant_cfg.to_bnb_config()
-        max_mem    = {0: "3500MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
+        max_mem    = {0: "7000MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
 
         base_model = AutoModelForCausalLM.from_pretrained(
             self.infer_cfg.base_model_id,
@@ -620,7 +620,7 @@ class QLoRAModelManager:
             prompt,
             return_tensors="pt",
             truncation=True,
-            max_length=512,
+            max_length=1024,        # RTX 5060 8GB — was 512 for RTX 3050
             padding=False,
         ).to(self.model.device)
 

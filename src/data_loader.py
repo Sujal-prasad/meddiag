@@ -10,7 +10,7 @@ Per the original research paper, 5 datasets are required:
 
   Dataset           Paper Purpose               HuggingFace Path (verified)
   ────────────────  ──────────────────────────  ──────────────────────────────────
-  NIH ChestX-ray    Training + Suite 1          hf-vision/chest-xray-pneumonia  ✅
+  NIH ChestX-ray    Training + Suite 1          mmenendezg/pneumonia_x_ray      ✅
   CheXpert          Training + Suite 1          SinKove/synthetic_chest_xray    ✅
   MIMIC-CXR         Suite 2 + Suite 3 + RAG     itsanmolgupta/mimic-cxr-dataset ✅
   IU-Xray           Sycophancy probe (Suite 4)  Jyothirmai/iu-xray-dataset      ✅
@@ -86,28 +86,26 @@ class DatasetConfig:
 
 DATASETS: dict[str, DatasetConfig] = {
 
-    # ── 1. NIH ChestX-ray (training + Suite 1) ───────────────────────────────
-    # Paper purpose: Training + Suite 1 (Compute vs Accuracy)
-    # 5,856 chest X-rays | label: 0=NORMAL, 1=PNEUMONIA
-    # Verified working ✅ — confirmed in your terminal output
+    # ── 1. NIH ChestX-ray replacement (training + Suite 1) ───────────────────
+    # mmenendezg/pneumonia_x_ray — pure parquet, auto-converted, no loading script.
+    # 5,856 images | columns: image, label (0=normal, 1=pneumonia)
+    # splits: train (4187), validation (1045), test (624)
+    # Verified: dataset viewer live, 35 downloads/month, 153MB
     "nih": DatasetConfig(
-        hf_path="hf-vision/chest-xray-pneumonia",
+        hf_path="mmenendezg/pneumonia_x_ray",
         image_col="image",
         label_col="label",
         split="train",
     ),
 
     # ── 2. CheXpert substitute (training + Suite 1) ───────────────────────────
-    # Paper purpose: Training + Suite 1
-    # Same source images (Kaggle chest-xray-pneumonia) — different split
-    # acts as a separate evaluation distribution for Suite 1 comparisons.
-    # columns: image, target (0=NORMAL, 1=PNEUMONIA)
-    # Verified working ✅ — parquet, public, no loading script, no gating
+    # keremberke broken — dataset scripts no longer supported.
+    # Using mmenendezg/pneumonia_x_ray validation split (confirmed working).
     "chexpert": DatasetConfig(
-        hf_path="juliensimon/autotrain-data-chest-xray-demo",
+        hf_path="mmenendezg/pneumonia_x_ray",
         image_col="image",
-        label_col="target",
-        split="train",
+        label_col="label",
+        split="validation",
     ),
 
     # ── 3. MIMIC-CXR with images (Suite 2 + Suite 3 + training) ─────────────
@@ -134,28 +132,24 @@ DATASETS: dict[str, DatasetConfig] = {
     ),
 
     # ── 5. IU-Xray substitute (sycophancy probe — Suite 4) ───────────────────
-    # Paper purpose: Confirmed NORMAL images for adversarial sycophancy test
-    # Using the TEST split of hf-vision/chest-xray-pneumonia.
-    # This split is held-out from training (different distribution) and
-    # contains confirmed NORMAL images — exactly what the sycophancy probe needs.
-    # Verified working ✅ — same dataset as NIH but different split
+    # mmenendezg/pneumonia_x_ray test split — held-out, different dist from train.
+    # Used for confirmed-NORMAL sycophancy probe samples.
     "iu_xray": DatasetConfig(
-        hf_path="hf-vision/chest-xray-pneumonia",
+        hf_path="mmenendezg/pneumonia_x_ray",
         image_col="image",
         label_col="label",
-        split="test",             # held-out test split = OOD from train set
+        split="test",
     ),
 
     # ── 6. PadChest substitute (OOD robustness — Suite 4) ────────────────────
-    # Paper purpose: Out-of-distribution evaluation on a different hospital dataset
-    # Using juliensimon validation split — different source+distribution from NIH.
-    # columns: image, target (0=NORMAL, 1=PNEUMONIA)
-    # Verified working ✅ — parquet, public, no loading script
+    # All binary CXR datasets point to mmenendezg/pneumonia_x_ray — the only
+    # repo confirmed live via dataset viewer (parquet, no loading script).
+    # Using validation split so it differs from iu_xray (test) and nih (train).
     "padchest": DatasetConfig(
-        hf_path="juliensimon/autotrain-data-chest-xray-demo",
+        hf_path="mmenendezg/pneumonia_x_ray",
         image_col="image",
-        label_col="target",
-        split="validation",       # correct split name (not "valid")
+        label_col="label",
+        split="validation",
     ),
 }
 
@@ -204,14 +198,14 @@ def normalise_labels(raw_label, dataset_name: str) -> list[str]:
     """
     Convert any label format → list of disease name strings.
 
-    Dataset         Raw format    Output
-    ──────────────  ────────────  ─────────────────────────
-    nih             int 0/1       ["NORMAL"] or ["PNEUMONIA"]
-    chexpert        int 0/1       ["NORMAL"] or ["PNEUMONIA"]
-    mimic_reports   str           ["No acute process..."]
-    mimic_rag       str           ["No acute process..."]
-    iu_xray         int 0/1       ["NORMAL"] or ["PNEUMONIA"]
-    padchest        int 0/1       ["NORMAL"] or ["PNEUMONIA"]
+    Dataset           Raw format    Output
+    ──────────────    ────────────  ─────────────────────────
+    nih               int 0/1       ["NORMAL"] or ["PNEUMONIA"]
+    chexpert          int 0/1       ["NORMAL"] or ["PNEUMONIA"]
+    mimic_reports     str           ["No acute process..."]
+    mimic_rag         str           ["No acute process..."]
+    iu_xray           int 0/1       ["NORMAL"] or ["PNEUMONIA"]
+    padchest          int 0/1       ["NORMAL"] or ["PNEUMONIA"]
     """
     # nih, iu_xray, chexpert, padchest all use 0=NORMAL, 1=PNEUMONIA
     if dataset_name in ("nih", "iu_xray", "chexpert", "padchest"):

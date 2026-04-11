@@ -41,6 +41,7 @@ import gc
 import json
 import logging
 import os
+import random
 import sys
 import time
 import warnings
@@ -153,6 +154,70 @@ def _panel_tag(ax, tag):
             va="bottom", ha="left")
 
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BALANCED SAMPLING
+# Fixes class imbalance in sequential streaming — NIH/PadChest start with
+# long runs of one class which invalidates AUROC/F1 on small eval sets.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_balanced_samples(
+    dataset_name: str,
+    n: int,
+    loader: "StreamingDatasetManager",
+) -> list[dict]:
+    """
+    Stream dataset and collect exactly n/2 NORMAL and n/2 PNEUMONIA samples.
+    Iterates the stream once, stops as soon as both quotas are filled.
+    Final list is shuffled with seed=42 for reproducibility.
+
+    Args:
+        dataset_name: Registered dataset key (e.g. "nih", "padchest").
+        n:            Total samples to return. Must be even.
+        loader:       StreamingDatasetManager instance.
+
+    Returns:
+        Shuffled list of n samples — exactly n//2 NORMAL, n//2 PNEUMONIA.
+
+    Raises:
+        RuntimeError: If the stream ends before both quotas are met.
+    """
+    quota = n // 2
+    normal_samples    = []
+    pneumonia_samples = []
+
+    for sample in loader.stream(dataset_name, max_samples=n * 20):
+        labels = [l.upper() for l in sample.get("labels", [])]
+        is_normal    = any("NORMAL" in l for l in labels)
+        is_pneumonia = any("PNEUMONIA" in l for l in labels)
+
+        if is_normal and len(normal_samples) < quota:
+            normal_samples.append(sample)
+        elif is_pneumonia and len(pneumonia_samples) < quota:
+            pneumonia_samples.append(sample)
+
+        if len(normal_samples) >= quota and len(pneumonia_samples) >= quota:
+            break
+
+    if len(normal_samples) < quota or len(pneumonia_samples) < quota:
+        raise RuntimeError(
+            f"Balanced sampling failed for '{dataset_name}': "
+            f"got {len(normal_samples)} NORMAL (need {quota}), "
+            f"{len(pneumonia_samples)} PNEUMONIA (need {quota}). "
+            "Dataset may be too small or class-imbalanced. "
+            "Reduce --n or switch dataset."
+        )
+
+    combined = normal_samples + pneumonia_samples
+    random.seed(42)
+    random.shuffle(combined)
+    logger.info(
+        f"Balanced sampling complete: "
+        f"{len(normal_samples)} NORMAL, {len(pneumonia_samples)} PNEUMONIA"
+    )
+    return combined
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # MEASUREMENT UTILITIES
 # ─────────────────────────────────────────────────────────────────────────────
@@ -195,17 +260,32 @@ def extract_label_from_report(report: str) -> int:
     return 0
 
 
+# Cache the BERTScore model after first load — prevents reloading from disk
+# on every call (which caused "UNEXPECTED key" spam in the logs).
+_BERT_SCORE_CACHE: dict = {}
+
 def compute_bertscore_f1(generated: str, reference: str) -> float:
-    """Compute BERTScore F1 on CPU — keeps GPU free for the LLM."""
+    """Compute BERTScore F1 on CPU — keeps GPU free for the LLM.
+    Model is cached after first load so the UNEXPECTED key warning
+    and disk reads only happen once per session.
+    """
     if not generated.strip() or not reference.strip():
         return 0.0
     try:
         from bert_score import score as bs_fn
+        import logging as _log
+        # Suppress the harmless UNEXPECTED key report from DistilBERT
+        # (vocab_layer_norm, vocab_transform etc.) — same as ST suppression.
+        _bs_logger = _log.getLogger("bert_score")
+        _prev = _bs_logger.level
+        _bs_logger.setLevel(_log.ERROR)
         _, _, F1 = bs_fn(
             cands=[generated], refs=[reference],
             lang="en", model_type="distilbert-base-uncased",
             verbose=False, device="cpu",
+            rescale_with_baseline=False,
         )
+        _bs_logger.setLevel(_prev)
         return float(F1.mean())
     except Exception as e:
         logger.warning(f"BERTScore failed: {e}")
@@ -324,9 +404,9 @@ class Suite1ComputeAccuracy:
 
         latencies, vram_spikes, y_true, y_pred = [], [], [], []
 
-        # Stream from NIH (NORMAL/PNEUMONIA binary labels)
-        logger.info("Streaming NIH samples...")
-        samples = loader.get_sample_batch("nih", n=n)
+        # Stream from NIH with balanced NORMAL/PNEUMONIA classes
+        logger.info("Streaming NIH samples (balanced)...")
+        samples = get_balanced_samples("nih", n, loader)
 
         for i, sample in enumerate(samples):
             labels     = sample.get("labels", [])
@@ -489,8 +569,7 @@ class Suite2HallucinationMitigation:
         logger.info(f"\n{'='*55}\nSuite 2: Hallucination Mitigation ({n} samples)\n{'='*55}")
         vlm    = get_vlm()
         loader = StreamingDatasetManager()
-        samples = loader.get_sample_batch("mimic_reports", n=n)
-
+        samples = get_balanced_samples("mimic_reports", n, loader)
         chair_alone, chair_rag = [], []
         fcr_alone,   fcr_rag   = [], []
 
@@ -617,8 +696,7 @@ class Suite3ClinicalInterpretability:
         logger.info(f"\n{'='*55}\nSuite 3: Clinical Interpretability ({n} samples)\n{'='*55}")
         vlm    = get_vlm()
         loader = StreamingDatasetManager()
-        samples = loader.get_sample_batch("mimic_reports", n=n)
-
+        samples = get_balanced_samples("mimic_reports", n, loader)
         bs_rag, bs_alone = [], []
 
         for i, sample in enumerate(samples):
@@ -750,8 +828,8 @@ class Suite4SycophancyRobustness:
         logger.info(f"\n  Sycophancy Probe: FPR={fpr_ours:.3f} | Pass Rate={pass_rate:.3f} ({n_syco} tests)")
 
         # ── OOD accuracy on PadChest (validation split) ────────────────────
-        logger.info("\nRunning OOD accuracy on PadChest samples...")
-        pad_samples = loader.get_sample_batch("padchest", n=n)
+        logger.info("\nRunning OOD accuracy on PadChest samples (balanced)...")
+        pad_samples = get_balanced_samples("padchest", n, loader)
 
         pad_y_true, pad_y_pred = [], []
         for i, sample in enumerate(pad_samples):
