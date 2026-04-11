@@ -1,9 +1,9 @@
 {
   "id": "006",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "NG tube in expected position with tip coiled in the stomach. No other interval change since chest radiograph performed earlier on the same day."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: Suggests absence of significant mediastinal pathology.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors mentioned in the clinical evidence.\n\nStep 2: Aortic knob calcifications also suggest potential underlying metabolic or degenerative processes.\n\nStep 3: Normal mediastinal contours indicate lack of significant mediastinal abnormalities.\n\nStep 4: Combining these observations suggests a non-specific, chronic condition rather than an acute process.\n\n=== FINAL_DIAGNOSIS ===\n\n<FINAL_DIAGNOSIS>\nCLASSIFICATION: NORMAL\nPRIMARY_FINDING: Mild cardiomegaly and aortic knob calcifications\nCONFIDENCE: HIGH\nRECOMMENDATION: None",
-  "latency_s": 93.0
+  "report": "=== VISUAL_FINDINGS ===\nThe NG tube terminates in the stomach. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- Impression: NG tube in expected position with tip coiled in the stomach. \n- IMPRESSION: The NG tube terminates in the fundus of the stomach. \n- IMPLICATION: NG tube ends appropriately in the stomach.\n\n=== DEDUCTIVE_reasonING ===\nStep 1: The NG tube's termination point in the stomach aligns with the first impression and implication, indicating it is indeed in the correct location.\n\nStep 2: The absence of any other notable abnormalities in the mediastinum, heart, or lungs supports the notion that there are no other issues affecting the patient.\n\nStep 3: The lack of pneumothorax, pleural effusion, or cardiac enlargement further reinforces the idea that the observed findings are within normal limits.\n\nStep 4: The mention of low lung volumes and bibasilar atelectasis does not contradict the NG tube's presence but rather indicates some degree of respiratory compromise which could be unrelated to the NG tube placement.\n\nStep 5: The overall consistency between the initial and subsequent radiographs suggests stability in these parameters.\n\nStep 6: The right Port-A",
+  "latency_s": 90.48
 }

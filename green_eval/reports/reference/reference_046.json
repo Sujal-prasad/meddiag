@@ -1,8 +1,8 @@
 {
   "id": "046",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Increased central vascular congestion with new mild pulmonary edema. Worsening bibasilar opacities, concerning for worsening atelectasis, though aspiration should be considered in the proper clinical context. Increased small right pleural effusion. Increased heart size, now top-normal."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Compared to chest radiographs from , there is increased vascular congestion with new mild interstitial edema. Lung volumes have decreased. Bibasilar opacities have worsened. Small right pleural effusion persists. No appreciable effusion on the left. Heart is top-normal in size, increased. Endotracheal tube is in standard placement. Right PICC line terminates at the cavoatrial junction. Enteric tube descends below the diaphragm and terminates in the proximal stomach. Prominent right convex scoliosis of the upper thoracic spine and left convex scoliosis of the lower thoracic spine.\nIMPRESSION: Increased central vascular congestion with new mild pulmonary edema. Worsening bibasilar opacities, concerning for worsening atelectasis, though aspiration should be considered in the proper clinical context. Increased small right pleural effusion. Increased heart size, now top-normal."
 }

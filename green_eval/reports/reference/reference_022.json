@@ -1,8 +1,8 @@
 {
   "id": "022",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "ET tube is appropriately positioned. Moderate right and increased, small left pleural effusion. Mild, unchanged pulmonary edema."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Moderate right pleural effusion is probably unchanged, taking into account changes in patient positioning. Increased, small left pleural effusion. Substantial bibasilar atelectasis. Moderate cardiomegaly with mild, unchanged pulmonary edema. An enteric tube terminates in the expected location the gastric body. A right-sided port/central venous catheter terminates in the right atrium.\nIMPRESSION: ET tube is appropriately positioned. Moderate right and increased, small left pleural effusion. Mild, unchanged pulmonary edema."
 }

@@ -1,8 +1,8 @@
 {
   "id": "007",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "No acute intrathoracic process."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Portable AP chest radiograph. The lungs are relatively well expanded without focal consolidation, pleural effusion or pneumothorax. The heart is normal in size with tortuous aortic contour.\nIMPRESSION: No acute intrathoracic process."
 }

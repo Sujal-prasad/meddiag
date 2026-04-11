@@ -1,8 +1,8 @@
 {
   "id": "044",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Enteric tube tip in the proximal stomach."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Enteric tube tip is in the proximal stomach, new since prior. More prominent right basilar opacity and adjacent right pleural effusion. Otherwise stable.\nIMPRESSION: Enteric tube tip in the proximal stomach."
 }

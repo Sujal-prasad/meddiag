@@ -1,8 +1,8 @@
 {
   "id": "003",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Innumerable pulmonary metastases. Possible mild pulmonary vascular congestion. Low lung volumes."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Lung volumes are low. This results in crowding of the bronchovascular structures. There may be mild pulmonary vascular congestion. The heart size is borderline enlarged. The mediastinal and hilar contours are relatively unremarkable. Innumerable nodules are demonstrated in both lungs, more pronounced in the left upper and lower lung fields compatible with metastatic disease. No new focal consolidation, pleural effusion or pneumothorax is seen, with chronic elevation of right hemidiaphragm again seen. The patient is status post right lower lobectomy. Rib deformities within the right hemithorax is compatible with prior postsurgical changes.\nIMPRESSION: Innumerable pulmonary metastases. Possible mild pulmonary vascular congestion. Low lung volumes."
 }

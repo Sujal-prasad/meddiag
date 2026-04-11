@@ -1,9 +1,9 @@
 {
   "id": "042",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Interval removal of the endotracheal tube. NG tube and right PICC line in appropriate positioning. Apparent resolution of the small bilateral pleural effusions."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: \nThe presence of mild cardiomegaly and aortic knob calcifications does not necessarily indicate an acute cardiopulmonary process.\n\nStep 2: \nThere is no indication of pleural effusion, pneumothorax, or focal consolidation, which would suggest alternative diagnoses like pneumonia, pulmonary edema, or pleurisy.\n\nStep 3: \nNormal mediastinal contours further support the absence of mass lesions or fluid collections within the thoracic cavity.\n\nStep 4: \nConsidering",
-  "latency_s": 91.12
+  "report": "=== VISUAL_FINDINGS ===\nThe patient's chest X-ray shows the NG tube positioned correctly below the diaphragm with the tip and side hole overlying the stomach. The right PICC line is terminating in the low SVC. The lungs are clear, with no signs of consolidation, edema, pneumothorax, or pleural effusion. The heart, mediastinal, and hilar contours are normal.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature supports the presence of an NG tube in the stomach and a PICC line in the low SVC.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: The correct positioning of the NG tube below the diaphragm with the tip and side hole overlying the stomach aligns with the retrieved literature.\n\nStep 2: The absence of pneumothorax, pleural effusion, consolidation, or edema in the lungs further supports the normalcy of lung function.\n\nStep 3: The normal size and contour of the heart, mediastinal, and hilar structures also support the absence of underlying pathology.\n\nStep 4: The termination of the PICC line in the low SVC is consistent with the retrieved literature.\n\nStep 5: The overall clarity and lack of abnormalities in all",
+  "latency_s": 86.28
 }

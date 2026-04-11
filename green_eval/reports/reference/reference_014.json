@@ -1,8 +1,8 @@
 {
   "id": "014",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "No significant interval change with bilateral pleural effusions with right pigtail catheter in the lower chest. Possible small right apical pneumothorax."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Single portable view of the chest is compared to previous exam from . Enteric tube is seen with tip off the inferior field of view. Left PICC is seen; however, tip is not clearly delineated. Persistent bibasilar effusions and a right pigtail catheter projecting over the lower chest. There is possible right apical pneumothorax. Superiorly, the lungs are clear of consolidation. Cardiac silhouette is within normal limits. Osseous and soft tissue structures are unremarkable.\nIMPRESSION: No significant interval change with bilateral pleural effusions with right pigtail catheter in the lower chest. Possible small right apical pneumothorax."
 }

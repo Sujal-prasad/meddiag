@@ -1,9 +1,9 @@
 {
   "id": "004",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "New mild pulmonary edema with persistent small bilateral pleural effusions. Severe cardiomegaly is likely accentuated due to low lung volumes and patient positioning."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n* No pleural effusion, pneumothorax, or focal consolidation: These findings indicate no accumulation of fluid or air in the pleural space or lung parenchyma.\n\n=== DEDUCTIVE_reasonING ===\n\n**Step 1:** Cardiomegaly is observed on all views, which could suggest several potential causes.\n\n**Step 2:** However, the absence of pleural effusion, pneumothorax, or focal consolidation reduces the likelihood of pulmonary pathology.\n\n**Step 3:** The presence of aortic knob calcifications does",
-  "latency_s": 94.69
+  "report": "**VISUAL_FINDINGS**\nMild pulmonary edema with small bilateral pleural effusions. Decreased lung volumes with crowding of vasculature. Severe cardiomegaly likely accentuated due to low lung volumes and patient positioning.\n\n**CLINICAL_EVIDENCE**\nRetrieved literature: Findings consistent with those reported above.\n\n**DEDUCTIVE_REASONING**\n\nStep 1: The presence of mild pulmonary edema and small bilateral pleural effusions suggests fluid accumulation within the lungs, which can be associated with various conditions such as heart failure or other cardiac issues.\n\nStep 2: The decrease in lung volumes and crowding of vasculature further support the presence of fluid overload, potentially indicating increased pressure or volume load on the cardiovascular system.\n\nStep 3: The severe cardiomegaly observed may be related to the underlying cause of the fluid overload, as it is likely accentuated by the reduced lung volumes and patient positioning.\n\n**FINAL_DIAGNOSIS**\n\n**CLASSIFICATION**: ABNORMAL\n\n**PRIMARY_FINDING**: Mild pulmonary edema with small bilateral pleural effusions and severe cardiomegaly.\n\n**CONFIDENCE**: HIGH\n\n**RECOMMENDATION**: Further evaluation and monitoring of the patient's condition, including echocardiography",
+  "latency_s": 89.3
 }

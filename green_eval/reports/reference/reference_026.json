@@ -1,8 +1,8 @@
 {
   "id": "026",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Moderate pulmonary edema with moderate to large bilateral pleural effusions and bibasilar atelectasis."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Heart size is difficult to assess given the presence of moderate to large bilateral pleural effusions, but appears at least moderately enlarged. The mediastinal contours are grossly unremarkable. Perihilar haziness with vascular indistinctness and diffuse alveolar opacities are compatible with moderate pulmonary edema. Bibasilar compressive atelectasis is demonstrated. No pneumothorax is seen. Moderate multilevel degenerative changes are noted in the thoracic spine.\nIMPRESSION: Moderate pulmonary edema with moderate to large bilateral pleural effusions and bibasilar atelectasis."
 }

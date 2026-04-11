@@ -1,8 +1,8 @@
 {
   "id": "025",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Mild to large bilateral, right greater than left pleural effusions. Degree of pulmonary edema may have slightly improved since prior exam although detailed evaluation is limited."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Moderate to large bilateral pleural effusions are again seen, likely right greater than left. There is suspected superimposed pulmonary edema may have slightly improved since prior although detailed evaluation is limited given layering pleural effusions. Vasculature appears less engorged. Cardiac silhouette cannot be assessed.\nIMPRESSION: Mild to large bilateral, right greater than left pleural effusions. Degree of pulmonary edema may have slightly improved since prior exam although detailed evaluation is limited."
 }

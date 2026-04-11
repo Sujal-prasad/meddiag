@@ -1,8 +1,8 @@
 {
   "id": "024",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Interval decrease in the right-sided. Stable appearance of the left lung."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: A chest tube in similar position. Interval decrease in the right-sided pleural effusion which is now small. There is still fluid along the minor fissure and right lower lobe opacification. Moderate to large left pleural effusion and significant opacification of the left lung is unchanged. Feeding tube has been removed. Nasogastric tube is coiled in the stomach region. .\nIMPRESSION: Interval decrease in the right-sided. Stable appearance of the left lung."
 }

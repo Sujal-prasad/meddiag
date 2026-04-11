@@ -1,8 +1,8 @@
 {
   "id": "027",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "CHF, slightly worse than on the prior study."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: The bilateral pleural effusions, lower lobe volume loss, and dense lower lobe opacity compatible with a combination of volume loss/infiltrate/effusion. The heart continues to be moderately enlarged. There is mild vascular redistribution.\nIMPRESSION: CHF, slightly worse than on the prior study."
 }

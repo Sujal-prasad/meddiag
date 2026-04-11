@@ -1,9 +1,9 @@
 {
   "id": "010",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "New moderate left pleural effusion with adjacent atelectasis in the left lung base."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors mentioned in the clinical evidence.\n\nStep 2: Normal mediastinal contours suggest that there is no apparent compression or invasion by a mass or fluid collection affecting the mediastinum.\n\nStep 3: Aortic knob calcifications do not directly relate to the current primary concern but indicate overall cardiovascular health.\n\nStep 4: No signs of pneumothorax, pleural effusion, or focal consolidation are present.\n\nStep 5: All views taken show consistent results without any new information.\n\nStep 6: Combining all observations leads to a comprehensive picture.\n\nStep 7: Synthesizing all points indicates that the patient's condition appears stable",
-  "latency_s": 94.1
+  "report": "=== VISUAL_FINDINGS ===\nModerate left pleural effusion, associated left basilar opacity likely reflecting compressive atelectasis, median sternotomy wires and mediastinal clips in expected positions.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature:\n\n* Findings: \n\t+ Moderate left pleural effusion is new since.\n\t+ Associated left basilar opacity likely reflects compressive atelectasis.\n\t+ There is no pneumothorax.\n\t+ There are no new abnormal cardiac or mediastinal contour.\n\t+ Median sternotomy wires and mediastinal clips are in expected positions.\n* Impression: New moderate left pleural effusion with adjacent atelectasis in the left lung base.\n* Findings: \n\t+ Right basilar opacity has mostly cleared since the prior radiographs.\n\t+ The cardiac, mediastinal and hilar contours are stable.\n\t+ The patient is status post sternotomy.\n\t+ There is no pleural effusion or pneumothorax.\n* Impression: No evidence of acute disease.\n* Findings: \n\t+ The cardiac, mediastinal and hilar contours appear unchanged.\n\t+ There is no pleural effusion or pneumothorax.\n\t+ Left bas",
+  "latency_s": 89.72
 }

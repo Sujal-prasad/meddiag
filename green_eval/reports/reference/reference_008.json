@@ -1,8 +1,8 @@
 {
   "id": "008",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Relative increase in opacity over the lung bases bilaterally felt due to overlying soft tissue rather than consolidation. Lateral view may be helpful for confirmation."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Relative increase in opacity over the lung bases bilaterally is felt due to overlying soft tissue rather than consolidation or pleural effusion. Lateral view may be helpful for confirmation. No large pleural effusion or pneumothorax is seen. The cardiac and mediastinal silhouettes are unremarkable. No overt pulmonary edema is seen\nIMPRESSION: Relative increase in opacity over the lung bases bilaterally felt due to overlying soft tissue rather than consolidation. Lateral view may be helpful for confirmation."
 }

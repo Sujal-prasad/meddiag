@@ -1,0 +1,2918 @@
+[
+  {
+    "id": "001",
+    "labels": [
+      "No acute cardiopulmonary process."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nMultiple surgical clips project over the left breast, and old left rib fractures are noted.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature:\n\n* Findings: \n\t+ The lungs are clear of focal consolidation, pleural effusion or pneumothorax. The heart size is normal. The me...",
+    "reference": "FINDINGS: The lungs are clear of focal consolidation, pleural effusion or pneumothorax. The heart size is normal. The mediastinal contours are normal. Multiple surgical clips project over the left breast, and old left rib fractures are noted.\nIMPRESSION: No acute cardiopulmonary process....",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 5,
+        "green_score": 0.9,
+        "reasoning": "The generated report correctly identifies all the findings in the reference report and provides additional information without any clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 0,
+        "missing_findings": 3,
+        "total_reference_findings": 4,
+        "green_score": 0.0,
+        "reasoning": "The AI report contains multiple clinically significant errors and missing findings, leading to a poor overall quality score.",
+        "critical_errors_found": [
+          "Wrong diagnosis (reported no acute cardiopulmonary process when pleural effusion is present), Incorrect anatomical location of rib fractures"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.8125,
+        "reasoning": "The AI report accurately captures most findings but includes some redundant information and stylistic variations.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.5708,
+    "score_std": 0.4052
+  },
+  {
+    "id": "002",
+    "labels": [
+      "Low lung volumes and mild pulmonary vascular congestion is unchanged. New small right fissural pleural effusion. No new focal opacities to suggest pneumonia."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe patient's chest X-ray shows bilateral scattered small pulmonary nodules, mild pulmonary vascular congestion, and a small pleural effusion in the right middle fissure.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- Findings: Innumerable bilateral scattered small pulmo...",
+    "reference": "FINDINGS: Lung volumes remain low. There are innumerable bilateral scattered small pulmonary nodules which are better demonstrated on recent CT. Mild pulmonary vascular congestion is stable. The cardiomediastinal silhouette and hilar contours are unchanged. Small pleural effusion in the right middle...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 3,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.43,
+        "reasoning": "The generated report correctly identifies the bilateral scattered small pulmonary nodules, mild pulmonary vascular congestion, and the new pleural effusion in the right middle fissure. However, it misses the mention of low lung volumes and fails to identify the new small pleural effusion as a critical finding, which could cause patient harm.",
+        "critical_errors_found": [
+          "Wrong diagnosis (e.g., reporting NORMAL when clearly ABNORMAL)"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report contains a clinically significant error by missing the mention of new small right fissural pleural effusion, which is present in the reference report.",
+        "critical_errors_found": [
+          "new small right fissural pleural effusion"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 7,
+        "missing_findings": 1,
+        "total_reference_findings": 8,
+        "green_score": 0.813,
+        "reasoning": "The AI report accurately captures most findings but misses 'low lung volumes' and uses slightly different wording in some instances.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6643,
+    "score_std": 0.1677
+  },
+  {
+    "id": "003",
+    "labels": [
+      "Innumerable pulmonary metastases. Possible mild pulmonary vascular congestion. Low lung volumes."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nInnumerable nodules are demonstrated in both lungs, more pronounced in the left upper and lower lung fields; chronic elevation of right hemidiaphragm; rib deformities within the right hemithorax compatible with prior postsurgical changes.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved ...",
+    "reference": "FINDINGS: Lung volumes are low. This results in crowding of the bronchovascular structures. There may be mild pulmonary vascular congestion. The heart size is borderline enlarged. The mediastinal and hilar contours are relatively unremarkable. Innumerable nodules are demonstrated in both lungs, more...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.714,
+        "reasoning": "The generated report correctly identifies the innumerable nodules, chronic elevation of right hemidiaphragm, rib deformities, and the history of right lower lobectomy. However, it misses the mild pulmonary vascular congestion and the borderline enlarged heart size.",
+        "critical_errors_found": [
+          "mild pulmonary vascular congestion",
+          "borderline enlarged heart size"
+        ],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.56,
+        "reasoning": "The AI report contains two clinically significant errors (missed pulmonary vascular congestion and incorrect severity assessment of lung volumes) and one clinically insignificant error, resulting in a moderate score.",
+        "critical_errors_found": [
+          "Wrong severity assessment of lung volumes",
+          "Missing mention of mild pulmonary vascular congestion"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 7,
+        "missing_findings": 2,
+        "total_reference_findings": 10,
+        "green_score": 0.45,
+        "reasoning": "The AI missed the finding of mild pulmonary vascular congestion and incorrectly stated that the mediastinal and hilar contours were unremarkable.",
+        "critical_errors_found": [
+          "Missing finding: Mild pulmonary vascular congestion"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.5747,
+    "score_std": 0.1083
+  },
+  {
+    "id": "004",
+    "labels": [
+      "New mild pulmonary edema with persistent small bilateral pleural effusions. Severe cardiomegaly is likely accentuated due to low lung volumes and patient positioning."
+    ],
+    "generated": "**VISUAL_FINDINGS**\nMild pulmonary edema with small bilateral pleural effusions. Decreased lung volumes with crowding of vasculature. Severe cardiomegaly likely accentuated due to low lung volumes and patient positioning.\n\n**CLINICAL_EVIDENCE**\nRetrieved literature: Findings consistent with those re...",
+    "reference": "FINDINGS: In comparison to study performed on of there is new mild pulmonary edema with small bilateral pleural effusions. Lung volumes have decreased with crowding of vasculature. No pneumothorax. Severe cardiomegaly is likely accentuated due to low lung volumes and patient positioning.\nIMPRESSION:...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 4,
+        "green_score": 1.0,
+        "reasoning": "All clinically significant findings are correctly identified and matched.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.625,
+        "reasoning": "The AI report contains a clinically significant error by misidentifying the severity of cardiomegaly as severe when the reference report indicated it was likely to be accentuated due to low lung volumes and patient positioning.",
+        "critical_errors_found": [
+          "Wrong severity assessment (mild vs severe)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The AI report accurately captures the key findings and clinical impression.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8273,
+    "score_std": 0.1545
+  },
+  {
+    "id": "005",
+    "labels": [
+      "An enteric tube courses below the level of the diaphragm."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe right costophrenic angle is not fully included on the image. Enteric tube courses below the level of the diaphragm. A single frontal view of the chest was obtained. Large bore right-sided central venous catheter is seen terminating in the low SVC/cavoatrial junction. \n\n==...",
+    "reference": "FINDINGS: The right costophrenic angle is not imaged. Otherwise, the lungs are clear. The heart size is upper limits of normal. Enteric tube courses below the level of the diaphragm. There is no pneumothorax.\nIMPRESSION: An enteric tube courses below the level of the diaphragm....",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 3,
+        "missing_findings": 0,
+        "total_reference_findings": 4,
+        "green_score": 0.75,
+        "reasoning": "The AI report correctly identifies the enteric tube and heart size, but includes an extra finding about the central venous catheter which is clinically insignificant.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 3,
+        "missing_findings": 0,
+        "total_reference_findings": 4,
+        "green_score": 0.6666666666666666,
+        "reasoning": "The AI report includes clinically significant errors (wrong anatomical location of findings and missing a finding) but also matches the reference in terms of overall findings.",
+        "critical_errors_found": [
+          "Wrong diagnosis (reporting clear lungs when left costophrenic angle is excluded), Incorrect anatomical location of a finding (left costophrenic angle exclusion not mentioned), Missing critical finding (left costophrenic angle not imaged)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.57,
+        "reasoning": "The AI missed the heart size being at the upper limits of normal and added a finding about a central venous catheter.",
+        "critical_errors_found": [
+          "Incorrect anatomical location of a finding (large bore right-sided central venous catheter is seen terminating in the low SVC/cavoatrial junction)"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6622,
+    "score_std": 0.0736
+  },
+  {
+    "id": "006",
+    "labels": [
+      "NG tube in expected position with tip coiled in the stomach. No other interval change since chest radiograph performed earlier on the same day."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe NG tube terminates in the stomach. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- Impression: NG tube in expected position with tip coiled in the stomach. \n- IMPRESSION: The NG tube terminates in the fundus of the stomach. \n- IMPLICATION: NG tube ends appropriately ...",
+    "reference": "FINDINGS: NG tube is coiled in the stomach. Right PICC in lower SVC is unchanged in position. Cardiac size is normal. Mild bibasilar opacities consistent with atelectasis, unchanged compared to chest radiograph performed earlier in the same day. There is no pneumothorax or pleural effusion.\nIMPRESSI...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 2,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.8,
+        "reasoning": "The generated report correctly identifies the NG tube's location and lack of other significant findings, but misses mentioning the mild bibasilar opacities consistent with atelectasis.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.5625,
+        "reasoning": "The AI report contains clinically significant errors regarding the presence of bibasilar atelectasis and missing findings such as pneumothorax, but also matches some findings correctly.",
+        "critical_errors_found": [
+          "bibasilar atelectasis",
+          "pneumothorax"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The AI report accurately captures most findings but misses the PICC line and uses overly verbose language.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7398,
+    "score_std": 0.1275
+  },
+  {
+    "id": "007",
+    "labels": [
+      "No acute intrathoracic process."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe lungs are relatively well expanded without focal consolidation, pleural effusion, or pneumothorax. The heart is normal in size with tortuous aortic contour.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature:\n\n* FINDINGS: \n    - Portable AP chest radiograph. The lung...",
+    "reference": "FINDINGS: Portable AP chest radiograph. The lungs are relatively well expanded without focal consolidation, pleural effusion or pneumothorax. The heart is normal in size with tortuous aortic contour.\nIMPRESSION: No acute intrathoracic process....",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 5,
+        "green_score": 0.9,
+        "reasoning": "The generated report correctly identifies all findings present in the reference report and does not contain any clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 5,
+        "green_score": 0.6666666666666666,
+        "reasoning": "The AI report contains clinically significant errors (missed pleural effusion and pneumothorax) but also matches the reference findings in other areas.",
+        "critical_errors_found": [
+          "Missing pleural effusion",
+          "Missing pneumothorax"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.923,
+        "reasoning": "The AI report accurately captured all clinically significant findings and only differed slightly in wording.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8299,
+    "score_std": 0.1158
+  },
+  {
+    "id": "008",
+    "labels": [
+      "Relative increase in opacity over the lung bases bilaterally felt due to overlying soft tissue rather than consolidation. Lateral view may be helpful for confirmation."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nModerate interval increase in diffuse bilateral heterogeneous opacities with air bronchograms and focal increased opacity in the right lower lobe.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature (FINDINGS): \nRelative increase in opacity over the lung bases bilaterally...",
+    "reference": "FINDINGS: Relative increase in opacity over the lung bases bilaterally is felt due to overlying soft tissue rather than consolidation or pleural effusion. Lateral view may be helpful for confirmation. No large pleural effusion or pneumothorax is seen. The cardiac and mediastinal silhouettes are unre...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 2,
+        "missing_findings": 3,
+        "total_reference_findings": 5,
+        "green_score": 0.4,
+        "reasoning": "The AI report correctly identified the relative increase in opacity over the lung bases bilaterally and the unremarkable cardiac and mediastinal silhouettes, but incorrectly reported moderate interval increase in diffuse bilateral heterogeneous opacities with air bronchograms. This is a clinically insignificant error as it does not change the overall interpretation of the X-ray.",
+        "critical_errors_found": [],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report contains two clinically significant errors and one clinically insignificant error, resulting in a moderate green score.",
+        "critical_errors_found": [
+          "Wrong diagnosis (overlooking the possibility of other causes for bilateral opacities), Incorrect anatomical location of finding (implied overlying soft tissue causing bilateral opacities without specifying which lobe)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.57,
+        "reasoning": "The AI report incorrectly states 'moderate interval increase' and mentions air bronchograms which are not present in the reference report.",
+        "critical_errors_found": [
+          "The AI report suggests 'moderate interval increase' in opacities when the reference report describes a 'relative increase'. This difference in wording could lead to misinterpretation of disease severity."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.5733,
+    "score_std": 0.1429
+  },
+  {
+    "id": "009",
+    "labels": [
+      "No acute cardiopulmonary abnormality."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nMediastinal surgical clips are seen. The cardiac silhouette is top-normal to mildly enlarged. The aorta is calcified and tortuous. Partially imaged is spinal fusion hardware within the thoracolumbar spine. No focal consolidation, pleural effusion or pneumothorax is seen.\n\n===...",
+    "reference": "FINDINGS: Patient is status post median sternotomy and CABG. Heart size is normal. Mediastinal and hilar contours are unchanged. Pulmonary vasculature is normal. No focal consolidation, pleural effusion or pneumothorax is seen. No acute osseous abnormality is detected.\nIMPRESSION: No acute cardiopul...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.875,
+        "reasoning": "The generated report correctly identifies most findings and matches the impression. The only clinically insignificant error is the slight difference in wording for the cardiac silhouette size.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 3,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report includes clinically significant errors (missed findings and incorrect severity assessment) but also matches the reference in key points, leading to a moderate green score.",
+        "critical_errors_found": [
+          "Incorrect severity of cardiac silhouette enlargement",
+          "Missed spinal fusion hardware"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI missed the normal heart size mentioned in the reference report.",
+        "critical_errors_found": [
+          "Incorrect assessment of heart size (normal vs mildly enlarged)"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.75,
+    "score_std": 0.1021
+  },
+  {
+    "id": "010",
+    "labels": [
+      "New moderate left pleural effusion with adjacent atelectasis in the left lung base."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nModerate left pleural effusion, associated left basilar opacity likely reflecting compressive atelectasis, median sternotomy wires and mediastinal clips in expected positions.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature:\n\n* Findings: \n\t+ Moderate left pleural effu...",
+    "reference": "FINDINGS: A moderate left pleural effusion is new since . Associated left basilar opacity likely reflect compressive atelectasis. There is no pneumothorax. There are no new abnormal cardiac or mediastinal contour. Median sternotomy wires and mediastinal clips are in expected positions.\nIMPRESSION: N...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.8571428571428572,
+        "reasoning": "The generated report correctly identifies all clinically significant findings and most of the matched findings, with an extra normal finding mentioned (right basilar opacity has mostly cleared since the prior radiographs).",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 4,
+        "missing_findings": 1,
+        "total_reference_findings": 8,
+        "green_score": 0.5625,
+        "reasoning": "The AI report contains two clinically significant errors (missed pneumothorax and incorrect anatomical location of the left basilar opacity) and one missing finding (right basilar opacity).",
+        "critical_errors_found": [
+          "Pneumothorax not mentioned",
+          "Left basilar opacity incorrectly localized to right"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.57,
+        "reasoning": "The AI missed the mention of the effusion being new since a previous study.",
+        "critical_errors_found": [
+          "Missing finding: 'Moderate left pleural effusion is new since...' from reference report."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6632,
+    "score_std": 0.1372
+  },
+  {
+    "id": "011",
+    "labels": [
+      "Interval increase inmoderate to large right and small left pleural effusions. Persistent right basilar pneumonia."
+    ],
+    "generated": "**VISUAL_FINDINGS**\nA large right-sided pleural effusion with associated basilar atelectasis.\n\n**CLINICAL_EVIDENCE**\nRetrieved literature: Enlarging right pleural effusion without pulmonary edema. Recommend obtaining PA and lateral chest radiographs.\n\n**DEDUCTIVE_REASONING**\n\nStep 1: The presence of...",
+    "reference": "FINDINGS: A single portable semi-erect chest radiograph was obtained. Small left and moderate layering right pleural effusions have increased in size since the preceding day's exam. The right middle lobe pnemonia seen on recent CT is not clearly differentiated, but the right heart border is obscured...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 1,
+        "missing_findings": 4,
+        "total_reference_findings": 6,
+        "green_score": 0.33,
+        "reasoning": "The generated report correctly identifies the large right-sided pleural effusion but misses the interval increase in size, moderate left pleural effusion, persistent right basilar pneumonia, left basilar atelectasis stability, and lack of new focal consolidation or pneumothorax.",
+        "critical_errors_found": [
+          "Wrong diagnosis (e.g., reporting NORMAL when clearly ABNORMAL) - Missed interval increase in moderate to large right pleural effusion.",
+          "Missing critical finding (e.g., missed pneumothorax, large effusion) - Missed the moderate left pleural effusion."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 4,
+        "missing_findings": 2,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI report incorrectly diagnoses the effusions as large, missing the distinction between moderate and large size in the reference report, which is a clinically significant error.",
+        "critical_errors_found": [
+          "Incorrect severity assessment of pleural effusion"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 1,
+        "missing_findings": 5,
+        "total_reference_findings": 7,
+        "green_score": 0.08,
+        "reasoning": "The AI missed several key findings and incorrectly stated the pneumonia was not clearly differentiated.",
+        "critical_errors_found": [
+          "Missed finding: Left pleural effusion",
+          "Incorrect severity assessment: Right pleural effusion described as 'large' when reference states 'moderate to large'"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.345,
+    "score_std": 0.2227
+  },
+  {
+    "id": "012",
+    "labels": [
+      "No significant change in right middle and lower lobe pneumonia. Small increase in left pleural effusion."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nSmall left pleural effusion. Moderate-sized right pleural effusion. Enlarged cardiac silhouette. Right middle lobe opacity. Basilar atelectasis. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: \n* FINDINGS: Small left and moderate layering right pleural effusions have increa...",
+    "reference": "FINDINGS: A single portable semi-erect chest radiograph is obtained. There is no significant change in the middle and lower lobe pneumonia, better appreciated on recent CT. There is no increased pulmonary edema, new consolidation, or pneumothorax. Layering left pleural effusion has gotten slightly b...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 3,
+        "missing_findings": 2,
+        "total_reference_findings": 5,
+        "green_score": 0.64,
+        "reasoning": "The generated report correctly identifies the moderate-sized right pleural effusion and small left pleural effusion (matched findings). However, it incorrectly reports an enlarged cardiac silhouette which is not mentioned in the reference report (clinically significant error). The generated report also mentions a right middle lobe opacity that is not clearly differentiated from pneumonia in the reference report and slightly different wording for the same findings (clinically insignificant errors).",
+        "critical_errors_found": [
+          "Enlarged cardiac silhouette"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.5625,
+        "reasoning": "The AI generated report contains clinically significant errors regarding the presence of pleural effusions and atelectasis, which are not matched with the reference findings.",
+        "critical_errors_found": [
+          "clinically_significant_errors"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 3,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 2,
+        "missing_findings": 3,
+        "total_reference_findings": 6,
+        "green_score": 0.17,
+        "reasoning": "The AI report contains several clinically significant errors, including incorrect assessments of pleural effusion size and the presence of atelectasis.",
+        "critical_errors_found": [
+          "Moderate-sized right pleural effusion",
+          "Enlarged cardiac silhouette",
+          "Basilar atelectasis"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.4575,
+    "score_std": 0.2057
+  },
+  {
+    "id": "013",
+    "labels": [
+      "Compared to the most recent study, there is improvement in the mild pulmonary edema and decrease in the small left pleural effusion. Moderate right pleural effusion and bibasilar atelectasis are stable."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nA right-sided PICC line ends in the upper to mid superior vena cava. \nAn upper endotracheal tube (OG tube) terminates within the stomach. \nRight pleural effusion > left pleural effusion. \nBibasilar hazy opacities consistent with bilateral pleural effusions. \nBilateral lower l...",
+    "reference": "FINDINGS: A bedside AP radiograph of the chest demonstrates interval improvement in mild pulmonary edema compared to the most recent study from . A moderate right pleural effusion is stable and a small left pleural effusion has also decreased in size. Aside from persistent bibasilar atelectasis, the...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 5,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.8571,
+        "reasoning": "The AI report correctly identifies the majority of findings and provides correct deductive reasoning for some, but misses the improvement in pulmonary edema and left pleural effusion, and incorrectly states that bibasilar hazy opacities are consistent with both pleural effusions and atelectasis (when they are actually consistent only with pleural effusions), which are clinically insignificant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 9,
+        "green_score": 0.56,
+        "reasoning": "The AI report contains two clinically significant errors (missed findings and incorrect anatomical location) and one clinically insignificant error, resulting in a moderate green score.",
+        "critical_errors_found": [
+          "Missing bilateral pleural effusions and atelectasis"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 5,
+        "matched_findings": 4,
+        "missing_findings": 6,
+        "total_reference_findings": 10,
+        "green_score": 0.18,
+        "reasoning": "The AI missed several key findings and made clinically significant errors regarding the nature of the opacities.",
+        "critical_errors_found": [
+          "Bibasilar hazy opacities consistent with bilateral pleural effusions.",
+          "The larger right pleural effusion compared to the left pleural effusion may indicate respiratory compromise or possible lung injury."
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.5324,
+    "score_std": 0.2771
+  },
+  {
+    "id": "014",
+    "labels": [
+      "No significant interval change with bilateral pleural effusions with right pigtail catheter in the lower chest. Possible small right apical pneumothorax."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nEnteric tube is seen with tip off the inferior field of view. \nLeft PICC is seen; however, tip is not clearly delineated. \nPersistent bibasilar effusions and a right pigtail catheter projecting over the lower chest. \nPossible right apical pneumothorax. \nCardiac silhouette is ...",
+    "reference": "FINDINGS: Single portable view of the chest is compared to previous exam from . Enteric tube is seen with tip off the inferior field of view. Left PICC is seen; however, tip is not clearly delineated. Persistent bibasilar effusions and a right pigtail catheter projecting over the lower chest. There ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The generated report correctly identifies most findings but misses the critical finding of 'No significant interval change' from the reference report.",
+        "critical_errors_found": [
+          "No significant interval change"
+        ],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.6444,
+        "reasoning": "The AI report contains two clinically significant errors (missed right apical pneumothorax and wrong severity assessment of bibasilar effusions) and one clinically insignificant error, resulting in a green score close to 0.6.",
+        "critical_errors_found": [
+          "Right apical pneumothorax not mentioned",
+          "Severity of bibasilar effusions incorrectly assessed"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.89,
+        "reasoning": "The AI report accurately captured most findings and lacked clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7971,
+    "score_std": 0.1088
+  },
+  {
+    "id": "015",
+    "labels": [
+      "Unchanged appearance of small bilateral pleural effusions status post extubation."
+    ],
+    "generated": "**VISUAL_FINDINGS**\nA single frontal radiograph of the chest shows:\n\n* A tiny right effusion\n* Small left effusion\n* Cardiac contours are unchanged\n* No consolidation, pneumothorax, or nodules present\n* A left-sided PICC line tip terminates in the left brachiocephalic vein\n* A right internal jugular...",
+    "reference": "FINDINGS: A single portable chest radiograph is obtained. Endotracheal and enteric tubes have been removed. A right internal jugular catheter tip terminates in the right atrium. A right pleural drain remains in the right base. A tiny right effusion and small left effusion are visualized. Cardiac con...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 7,
+        "missing_findings": 1,
+        "total_reference_findings": 8,
+        "green_score": 0.6875,
+        "reasoning": "One clinically significant error (incorrect diagnosis of bibasilar atelectasis) and two clinically insignificant errors (style differences and extra normal finding mentioned).",
+        "critical_errors_found": [
+          "bibasilar atelectasis"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 4,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 10,
+        "missing_findings": 3,
+        "total_reference_findings": 15,
+        "green_score": 0.6667,
+        "reasoning": "The AI report contains multiple clinically significant errors, notably misidentifying bilateral bibasilar atelectasis and the presence of a metallic foreign body, which are not mentioned in the reference.",
+        "critical_errors_found": [
+          "Bilateral bibasilar atelectasis",
+          "Metallic foreign body"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 3,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 10,
+        "green_score": 0.25,
+        "reasoning": "The AI report incorrectly identifies atelectasis and a foreign body, and misses the mention of enteric tubes being removed.",
+        "critical_errors_found": [
+          "Bilateral bibasilar atelectasis",
+          "Metallic density foreign body projected over the left upper quadrant"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.5347,
+    "score_std": 0.2015
+  },
+  {
+    "id": "016",
+    "labels": [
+      "Bilateral pleural effusion, right greater than left. Underlying consolidation cannot be completely excluded. Recommend repositioning. NG tube terminates in stomach with sidehole in distal esophagus. Right PICC terminates in the axilla."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe frontal supine view of the chest shows:\n\n* Normal-sized heart with normal cardiomediastinal contours\n* Increased opacity in the right hemithorax, consistent with a moderate-to-large size pleural effusion\n* Small pleural effusion in the left hemithorax\n* Right PICC line te...",
+    "reference": "FINDINGS: Frontal supine view of the chest was obtained. The heart is of normal size with normal cardiomediastinal contours. The right hemithorax demontrates increased opacity, compatible with a moderate-to-large size layering pleural effusion. A small left pleural effusion is also present. No pneum...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 7,
+        "missing_findings": 2,
+        "total_reference_findings": 9,
+        "green_score": 0.89,
+        "reasoning": "The generated report correctly identifies most findings but incorrectly diagnoses a potential small pneumothorax on the right, which is clinically significant. The reference report does not mention any pneumothorax.",
+        "critical_errors_found": [
+          "potential small pneumothorax on the right"
+        ],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 3,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 5,
+        "missing_findings": 1,
+        "total_reference_findings": 9,
+        "green_score": 0.4444444444444444,
+        "reasoning": "The AI generated report contains multiple clinically significant errors and a few clinically insignificant ones, resulting in a low green score.",
+        "critical_errors_found": [
+          "Potential small pneumothorax on the right",
+          "Extensive retrocardiac opacity in the left lower lobe"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 7,
+        "missing_findings": 1,
+        "total_reference_findings": 9,
+        "green_score": 0.62,
+        "reasoning": "The AI missed the recommendation to reposition the patient and incorrectly suggested a potential pneumothorax.",
+        "critical_errors_found": [
+          "Missing critical finding: Recommendation to reposition."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6515,
+    "score_std": 0.1833
+  },
+  {
+    "id": "017",
+    "labels": [
+      "No acute cardiopulmonary process."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nChain sutures overlying the right upper hemithorax, rounded opacities projecting over the lower hemithorax bilaterally on the left and right, low lung volumes, retrocardiac opacity, and a catheter projecting over the left neck.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature:...",
+    "reference": "FINDINGS: Single AP supine portable view of the chest was obtained. Chain sutures are seen overlying the right upper hemithorax. There has been interval removal of a previously seen right-sided port. The cardiac and mediastinal silhouettes are stable. No definite focal consolidation is seen. Rounded...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.714,
+        "reasoning": "The generated report correctly identifies most findings and provides reasonable deductive reasoning for some of them. However, it misses the stable cardiac and mediastinal silhouettes and the absence of definite focal consolidation.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 3,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 10,
+        "total_reference_findings": 15,
+        "green_score": 0.2666666666666667,
+        "reasoning": "The AI report contains multiple clinically significant errors and missing findings, significantly deviating from the reference report's accurate depiction of the patient's condition.",
+        "critical_errors_found": [
+          "Wrong diagnosis (reported no acute cardiopulmonary process when there are visible findings), Incorrect anatomical location of a finding (catheter over left neck instead of chain sutures), Wrong severity assessment (no mention of low lung volumes and retrocardiac opacity)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 3,
+        "missing_findings": 2,
+        "total_reference_findings": 8,
+        "green_score": 0.375,
+        "reasoning": "The AI missed the removal of a previously seen right-sided port and incorrectly stated low lung volumes persist despite removal of a basal chest tube.",
+        "critical_errors_found": [
+          "Incorrectly stated low lung volumes persist despite removal of a basal chest tube."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.4519,
+    "score_std": 0.1905
+  },
+  {
+    "id": "018",
+    "labels": [
+      "No evidence of pneumonia, edema or effusion."
+    ],
+    "generated": "**VISUAL_FINDINGS**\nA left-sided PICC line courses into the chest. Its tip is not well visualized but it appears to terminate in the left brachiocephalic vein. Partly visualized cervicothoracic fusion shows no definite change. The cardiac, mediastinal and hilar contours appear unchanged. An increasi...",
+    "reference": "FINDINGS: A left-sided PICC is unchanged in position. Cardiac and mediastinal contours are unchanged from the prior exam. There is no evidence of pulmonary edema. No effusions are identified. There is no pneumothorax. Surgical chain sutures are again seen in the right upper lobe consistent with prio...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.833,
+        "reasoning": "The generated report correctly identifies the PICC line, cardiac and mediastinal contours, and lack of pleural effusion or pneumothorax (matched findings). However, it incorrectly states that the left-sided PICC line has been removed (clinically significant error), and there are slight differences in wording and phrasing (clinically insignificant errors).",
+        "critical_errors_found": [
+          "The generated report incorrectly states that the left-sided PICC line has been removed."
+        ],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 13,
+        "missing_findings": 4,
+        "total_reference_findings": 17,
+        "green_score": 0.5882352941176471,
+        "reasoning": "The AI report contains multiple clinically significant errors that could impact patient care, such as missing the left-sided PICC line and its position, misinterpreting the opacity in the retrocardiac area, and suggesting a possible infectious cause for an unclear finding.",
+        "critical_errors_found": [
+          "Left-sided PICC line not mentioned",
+          "Opacity interpretation error"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 9,
+        "green_score": 0.38,
+        "reasoning": "The AI report incorrectly suggests an opacity in the left retrocardiac area and a possible infectious process, which are not present in the reference report.",
+        "critical_errors_found": [
+          "Incorrectly reports an increasing opacity in the left retrocardiac area with bronchograms",
+          "Suggests a vague left mid lung opacity, possibly infectious, which is not supported by the reference report"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6004,
+    "score_std": 0.1851
+  },
+  {
+    "id": "019",
+    "labels": [
+      "Pneumoperitoneum. Widening of the vascular pedicle may be related to low lung volumes and intravascular volume status."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nFree air is present underneath both hemidiaphragms. Lung volumes are low. The vascular pedicle is widened and there is slightly increased rightward shift of the trachea, which may be projectional. Multi focal ill-defined lung opacities are similar to prior and consistent with...",
+    "reference": "FINDINGS: Single frontal view of the chest was obtained. Free air is present underneath both hemidiaphragms. Lung volumes are low. The vascular pedicle is widened and there is slightly increased rightward shift of the trachea, which may be projectional. Multi focal ill-defined lung opacities are sim...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.888888888888889,
+        "reasoning": "The generated report correctly identifies all clinically significant findings and matches most of the minor findings. The only insignificant error is an extra mention of 'AP view of the chest' which is not present in the reference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 8,
+        "missing_findings": 2,
+        "total_reference_findings": 10,
+        "green_score": 0.7333,
+        "reasoning": "The AI report includes a clinically significant error by mentioning the AP view of the chest, which was not part of the original findings.",
+        "critical_errors_found": [
+          "AP view of the chest"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 14,
+        "missing_findings": 0,
+        "total_reference_findings": 15,
+        "green_score": 0.933,
+        "reasoning": "The AI report accurately captured all clinically significant findings and only had one minor stylistic difference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8517,
+    "score_std": 0.0857
+  },
+  {
+    "id": "020",
+    "labels": [
+      "Dobhoff tube terminates within the stomach."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nA single portable view of the lower chest and upper abdomen shows an enteric tube with its tip in the upper stomach. \n\nA relatively distended loop of small bowel is visible in the mid-abdomen. \nExcreted contrast is seen within the renal pelvises bilaterally.\n\nLateral aspect o...",
+    "reference": "FINDINGS: Within the interim, the previously seen enteric tube has been removed. A new enteric tube with a weighted tip projects over the stomach. A right central venous catheter is unchanged in position. A right ureteral stent is incompletely imaged. The remainder of the study is not optimized for ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 2,
+        "missing_findings": 1,
+        "total_reference_findings": 3,
+        "green_score": 0.67,
+        "reasoning": "The generated report correctly identifies the enteric tube in the stomach and the presence of a right central venous catheter (matched findings). However, it misses the mention of the right ureteral stent (missing finding), which is clinically insignificant. The overall quality is GOOD.",
+        "critical_errors_found": [],
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.67,
+        "reasoning": "The AI report incorrectly identifies the enteric tube's location and fails to mention several key findings, leading to a clinically significant error.",
+        "critical_errors_found": [
+          "Incorrect anatomical location of the enteric tube"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 5,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI report missed several findings from the reference report but did not introduce clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.655,
+    "score_std": 0.0212
+  },
+  {
+    "id": "021",
+    "labels": [
+      "Substantially increased, large, bilateral pleural effusions."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nInflated lung parenchyma appears grossly clear, but is incompletely evaluated due to substantial pleural effusions. A Dobhoff tube is unchanged in position, terminating in the mid stomach. A right-sided port is unchanged in position. Moderate left-sided pleural effusion. Mult...",
+    "reference": "FINDINGS: Inflated lung parenchyma appears grossly clear, but is incompletely evaluated due to the substantial pleural effusions. A Dobhoff tube is unchanged in position, terminating in the mid stomach. A right-sided port is unchanged in position.\nIMPRESSION: Substantially increased, large, bilatera...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.8,
+        "reasoning": "The AI report correctly identifies the substantial pleural effusions, Dobhoff tube, right-sided port, and multiple surgical clips. The only clinically insignificant error is an additional finding of moderate left-sided pleural effusion which was not present in the reference report.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.5833,
+        "reasoning": "The AI generated report includes a clinically significant error (moderate left-sided pleural effusion not mentioned in the reference) and two clinically insignificant errors, but also matches four findings from the reference.",
+        "critical_errors_found": [
+          "Moderate left-sided pleural effusion"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 5,
+        "green_score": 0.6,
+        "reasoning": "The AI missed the severity of the pleural effusions and added findings not present in the reference report.",
+        "critical_errors_found": [
+          "Incorrect severity assessment of pleural effusion."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6611,
+    "score_std": 0.0985
+  },
+  {
+    "id": "022",
+    "labels": [
+      "ET tube is appropriately positioned. Moderate right and increased, small left pleural effusion. Mild, unchanged pulmonary edema."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nModerate right pleural effusion. Increased, small left pleural effusion. Substantial bibasilar atelectasis. Moderate cardiomegaly with mild, unchanged pulmonary edema. An enteric tube terminates in the expected location the gastric body. A right-sided port/central venous cath...",
+    "reference": "FINDINGS: Moderate right pleural effusion is probably unchanged, taking into account changes in patient positioning. Increased, small left pleural effusion. Substantial bibasilar atelectasis. Moderate cardiomegaly with mild, unchanged pulmonary edema. An enteric tube terminates in the expected locat...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.875,
+        "reasoning": "The generated report correctly identifies all major findings and their severity, but it includes an extra normal finding (the literature retrieval section).",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.5556,
+        "reasoning": "The AI report contains clinically significant errors that could impact patient care, such as misinterpreting the findings and failing to mention some key details.",
+        "critical_errors_found": [
+          "Wrong severity assessment of pleural effusion",
+          "Incorrect anatomical location of atelectasis"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.9375,
+        "reasoning": "The AI report accurately captured all clinically significant findings and only differed in wording for one finding.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7894,
+    "score_std": 0.1673
+  },
+  {
+    "id": "023",
+    "labels": [
+      "No acute cardiopulmonary abnormality."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nRight-sided Port-A-Cath tip terminates in the proximal right atrium. Moderate enlargement of the cardiac silhouette is unchanged. The mediastinal and hilar contours are similar. Pulmonary vasculature is normal. The lungs are clear. No focal consolidation, pleural effusion or ...",
+    "reference": "FINDINGS: Right-sided Port-A-Cath tip terminates in the proximal right atrium. Moderate enlargement of the cardiac silhouette is unchanged. The mediastinal and hilar contours are similar. Pulmonary vasculature is normal. The lungs are clear. No focal consolidation, pleural effusion or pneumothorax i...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.888888888888889,
+        "reasoning": "The generated report correctly identifies all clinically significant findings and most of the incidental findings, with one minor difference in wording.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 13,
+        "missing_findings": 0,
+        "total_reference_findings": 14,
+        "green_score": 0.9357,
+        "reasoning": "The AI report matches the reference findings and does not contain clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 16,
+        "missing_findings": 0,
+        "total_reference_findings": 17,
+        "green_score": 0.94,
+        "reasoning": "The AI report accurately captured all findings and impressions of the reference report with a minor stylistic difference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.9215,
+    "score_std": 0.0231
+  },
+  {
+    "id": "024",
+    "labels": [
+      "Interval decrease in the right-sided. Stable appearance of the left lung."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nModerate to large left pleural effusion. Significant opacification of the left lung. Fluid along the minor fissure and right lower lobe opacification. Small right-sided pleural effusion. Nasogastric tube is coiled in the stomach region. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved L...",
+    "reference": "FINDINGS: A chest tube in similar position. Interval decrease in the right-sided pleural effusion which is now small. There is still fluid along the minor fissure and right lower lobe opacification. Moderate to large left pleural effusion and significant opacification of the left lung is unchanged. ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The generated report correctly identifies all major findings and provides a reasonable interpretation of the X-ray. The only clinically insignificant error is the mention of new opacities at both bases which are not present in the reference report.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 9,
+        "green_score": 0.56,
+        "reasoning": "The AI report contains multiple clinically significant errors and a few clinically insignificant ones, resulting in an overall green score of 0.56.",
+        "critical_errors_found": [
+          "Wrong severity assessment (small right-sided pleural effusion vs small decrease), Missing critical finding (interval decrease in the right-sided pleural effusion)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 6,
+        "missing_findings": 2,
+        "total_reference_findings": 8,
+        "green_score": 0.57,
+        "reasoning": "The AI missed the chest tube and interval decrease in right pleural effusion, which are clinically significant.",
+        "critical_errors_found": [
+          "Missed finding: Chest tube",
+          "Missed finding: Interval decrease in right-sided pleural effusion"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6623,
+    "score_std": 0.1377
+  },
+  {
+    "id": "025",
+    "labels": [
+      "Mild to large bilateral, right greater than left pleural effusions. Degree of pulmonary edema may have slightly improved since prior exam although detailed evaluation is limited."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nModerate to large bilateral pleural effusions are seen, with the right greater than left. Small bilateral pleural effusions are now present. Low lung volumes are observed. A right upper lobe opacity has improved. No pneumothorax is visible. The heart's cardiac silhouette rema...",
+    "reference": "FINDINGS: Moderate to large bilateral pleural effusions are again seen, likely right greater than left. There is suspected superimposed pulmonary edema may have slightly improved since prior although detailed evaluation is limited given layering pleural effusions. Vasculature appears less engorged. ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 3,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.8,
+        "reasoning": "The generated report correctly identifies the moderate to large bilateral pleural effusions and the improvement in these effusions, which are clinically significant findings. However, it incorrectly mentions small bilateral pleural effusions (CIE) and right IJ line termination in the right atrium (CIE). The cardiac silhouette cannot be assessed in both reports.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI report contains two clinically significant errors (missed bilateral small pleural effusions and incorrect assessment of pulmonary edema improvement) and one clinically insignificant error, resulting in a green score of 0.625.",
+        "critical_errors_found": [
+          "Bilateral small pleural effusions not mentioned",
+          "Improvement in pulmonary edema incorrectly assessed"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 3,
+        "missing_findings": 2,
+        "total_reference_findings": 6,
+        "green_score": 0.3333333333333333,
+        "reasoning": "The AI missed the suspected pulmonary edema and the inability to assess the cardiac silhouette.",
+        "critical_errors_found": [
+          "Missing critical finding: Suspected superimposed pulmonary edema"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.5861,
+    "score_std": 0.1925
+  },
+  {
+    "id": "026",
+    "labels": [
+      "Moderate pulmonary edema with moderate to large bilateral pleural effusions and bibasilar atelectasis."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nModerate to large bilateral pleural effusions, heart size appears at least moderately enlarged, perihilar haziness with vascular indistinctness, diffuse alveolar opacities, bibasilar compressive atelectasis, moderate multilevel degenerative changes in the thoracic spine.\n\n===...",
+    "reference": "FINDINGS: Heart size is difficult to assess given the presence of moderate to large bilateral pleural effusions, but appears at least moderately enlarged. The mediastinal contours are grossly unremarkable. Perihilar haziness with vascular indistinctness and diffuse alveolar opacities are compatible ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.888888888888889,
+        "reasoning": "The generated report accurately matches all clinically significant findings and has no clinically insignificant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.6666666666666666,
+        "reasoning": "The AI report contains a clinically significant error by incorrectly attributing the heart size finding to fluid overload, which is not supported by the clinical evidence.",
+        "critical_errors_found": [
+          "Wrong severity assessment of heart size"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 9,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.98,
+        "reasoning": "The AI report accurately captured all clinically significant findings and only had a minor stylistic difference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8452,
+    "score_std": 0.1316
+  },
+  {
+    "id": "027",
+    "labels": [
+      "CHF, slightly worse than on the prior study."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nBilateral pleural effusions, lower lobe volume loss, and dense lower lobe opacity consistent with combined volume loss/infiltrate/effusion. Heart is moderately enlarged. Mild vascular redistribution.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: \n- Bilateral pleural effusi...",
+    "reference": "FINDINGS: The bilateral pleural effusions, lower lobe volume loss, and dense lower lobe opacity compatible with a combination of volume loss/infiltrate/effusion. The heart continues to be moderately enlarged. There is mild vascular redistribution.\nIMPRESSION: CHF, slightly worse than on the prior st...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 5,
+        "green_score": 1.0,
+        "reasoning": "All clinically significant findings are correctly identified and matched.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.6428571428571429,
+        "reasoning": "The AI report contains a clinically significant error in the diagnosis, misidentifying CHF as slightly worse than on the prior study.",
+        "critical_errors_found": [
+          "Wrong severity assessment (mild vs severe)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.986,
+        "reasoning": "The AI report accurately captures all clinically significant findings and only has a minor stylistic difference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8763,
+    "score_std": 0.1652
+  },
+  {
+    "id": "028",
+    "labels": [
+      "No acute cardiopulmonary abnormality."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nLeft-sided single lead AICD is seen with lead extending to the expected position of the right ventricle. Cardiac silhouette is enlarged. Perihilar airspace opacities are present. Left hemidiaphragm is obscured.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: FINDINGS - The p...",
+    "reference": "FINDINGS: Patient is status post median sternotomy and CABG. Left-sided AICD is noted with single lead terminating in the right ventricle. Heart size is normal. Mediastinal and hilar contours are normal. Lungs are clear. No pleural effusion or pneumothorax. No acute osseous abnormalities are detecte...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 3,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.43,
+        "reasoning": "The generated report correctly identified the AICD and heart size but incorrectly diagnosed pulmonary edema (CSE), which is clinically significant. The reference report did not mention perihilar airspace opacities or left hemidiaphragm obscuration.",
+        "critical_errors_found": [
+          "Pulmonary edema suggested by perihilar airspace op"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.5625,
+        "reasoning": "The AI generated report includes clinically significant errors (missed perihilar airspace opacities and left hemidiaphragm obscuration) and missing findings (pleural effusion, pneumothorax), but also matched several key findings.",
+        "critical_errors_found": [
+          "Missing perihilar airspace opacities",
+          "Left hemidiaphragm obscuration"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 3,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 1,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.06,
+        "reasoning": "The AI report incorrectly diagnoses pulmonary edema and suggests atelectasis or pleural effusion, which are not present in the reference report.",
+        "critical_errors_found": [
+          "Incorrect diagnosis of pulmonary edema",
+          "Missing finding: No acute osseous abnormalities detected",
+          "Incorrect severity assessment: Enlarged cardiac silhouette"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.3508,
+    "score_std": 0.2126
+  },
+  {
+    "id": "029",
+    "labels": [
+      "Progression of bilateral opacities, now more confluent, particularly on the left. suggesting progression of alveolar edema. In the appropriate clinical setting, underlying infectious infiltrate would be difficult to exclude."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nBilateral extensive interstitial and alveolar opacity use; small effusions; lines and tubes unchanged; cardiomediastinal silhouette unchanged; no pneumothorax detected.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- Finding 1: Lines and tubes are unchanged in position. T...",
+    "reference": "FINDINGS: Lines and tubes are grossly unchanged. The NG to cannot be traced through the lower most mediastinum due to underpenetration. The cardiomediastinal silhouette is unchanged. Extensive interstitial and alveolar opacity use in both lungs appear more confluent . Small effusions would be diffic...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The generated report correctly identifies most findings and the clinical reasoning is accurate, with one minor difference in the interpretation of small effusions.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.46875,
+        "reasoning": "The AI report contains two clinically significant errors and one clinically insignificant error, resulting in a moderate discrepancy from the reference report.",
+        "critical_errors_found": [
+          "Wrong diagnosis (reporting stability where progression is indicated)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 6,
+        "missing_findings": 1,
+        "total_reference_findings": 8,
+        "green_score": 0.57,
+        "reasoning": "The AI missed the finding of NG tube underpenetration and introduced a new finding not present in the reference report.",
+        "critical_errors_found": [
+          "The AI incorrectly stated that there is a new patchy opacity at the right lung base which may reflect aspiration or a developing infiltrate."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6319,
+    "score_std": 0.1644
+  },
+  {
+    "id": "030",
+    "labels": [
+      "Slight interval worsening of vascular congestion and mild pulmonary edema. Additionally, the heart appears slightly larger."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nEnteric tube courses below the diaphragm, into the left upper quadrant, into the expected location of the stomach. Small left pleural effusion is seen. There is mild pulmonary vascular congestion. Subtle bibasilar opacities may relate to vascular congestion, but aspiration is...",
+    "reference": "FINDINGS: An enteric tube courses below the diaphragm with the tip out of the field of view. The lung volumes are low. Bibasilar atelectasis is unchanged. Since the prior exam, there has been a slight interval worsening of the vascular congestion and mild pulmonary edema. There is no opacity to sugg...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 6,
+        "missing_findings": 3,
+        "total_reference_findings": 9,
+        "green_score": 0.56,
+        "reasoning": "The AI report correctly identified the enteric tube, bibasilar atelectasis, vascular congestion, and pulmonary edema but incorrectly located the enteric tube in the left upper quadrant instead of below the diaphragm with the tip out of the field of view. The AI also missed the slight interval worsening of the vascular congestion and the unchanged mediastinal contours.",
+        "critical_errors_found": [
+          "Incorrect anatomical location of a finding",
+          "Wrong severity assessment"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report contains two clinically significant errors (missed small left pleural effusion and incorrect anatomical location of the enteric tube) and one clinically insignificant error, resulting in a green score of 0.75.",
+        "critical_errors_found": [
+          "clinically_significant_errors"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 5,
+        "missing_findings": 3,
+        "total_reference_findings": 10,
+        "green_score": 0.28,
+        "reasoning": "The AI report incorrectly identifies a pleural effusion and suggests aspiration as a possibility.",
+        "critical_errors_found": [
+          "Incorrectly reports the presence of a small left pleural effusion when none is identified in the reference report.",
+          "Suggests aspiration as a possible cause for bibasilar opacities without sufficient evidence."
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.53,
+    "score_std": 0.193
+  },
+  {
+    "id": "031",
+    "labels": [
+      "Subtle new confluent opacity in the right perihilar region,? related to subtle progression of CHF findings. Otherwise, I doubt significant interval change. Attention to this area on followup films is requested."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe right IJ line's tip overlies the proximal SVC. The ET tube, left IJ line, and NG type tube appear unchanged. A subtle confluent opacity is present in the right perihilar region. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature suggests that the position of the IJ lines ca...",
+    "reference": "FINDINGS: Compared to the prior study, the right IJ line may have been exchanged. The tip overlies the proximal SVC. The ET tube, left IJ line and NG type tube appear unchanged. No pneumothorax is detected. There is some new subtle confluent opacity in the right perihilar region. Otherwise, I doubt ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 4,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.571,
+        "reasoning": "The generated report correctly identifies the right IJ line's tip overlies the proximal SVC, the ET tube, left IJ line, and NG type tube appear unchanged, and a subtle confluent opacity is present in the right perihilar region. However, it misses the potential exchange of the right IJ line and fails to mention the 'prominent cardiomediastinal silhouette' and 'no gross effusion'.",
+        "critical_errors_found": [
+          "Potential exchange of the right IJ line"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report incorrectly interprets the confluent opacity as potentially benign, which could lead to overlooking a significant finding.",
+        "critical_errors_found": [
+          "Wrong severity assessment (mild vs severe)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 6,
+        "missing_findings": 3,
+        "total_reference_findings": 10,
+        "green_score": 0.57,
+        "reasoning": "The AI report missed some findings and included unnecessary deductions, but the clinically significant errors were absent.",
+        "critical_errors_found": [],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6303,
+    "score_std": 0.0846
+  },
+  {
+    "id": "032",
+    "labels": [
+      "Worsening combination of pleural effusion, pulmonary edema and possibly pneumonia particularly in the right lower lobe."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nNumerous round opacities in the right mid and lower lung. Mild pulmonary vascular congestion. Small left pleural effusion. Retrocardiac opacity consistent with left lower lobe pneumonia. Decreased lung volumes. Normal-sized heart. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved literat...",
+    "reference": "FINDINGS: Numerous nodular opacities compatible the patient's metastatic disease are again appreciated. In addition, there is worsening pulmonary edema as well as a worsening right lower lobe infiltrate which could represent pneumonia in the correct clinical setting. A right pleural effusion is also...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 7,
+        "green_score": 0.571,
+        "reasoning": "The generated report correctly identifies numerous round opacities, mild pulmonary vascular congestion, and a small left pleural effusion. However, it misses the worsening of these findings, the right lower lobe infiltrate, and the right pleural effusion which are clinically significant errors. The report also mentions an extra normal finding (normal-sized heart) and has slightly different wording for some findings.",
+        "critical_errors_found": [
+          "Worsening right lower lobe infiltrate",
+          "Right pleural effusion"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 8,
+        "green_score": 0.5625,
+        "reasoning": "The AI generated report contains two clinically significant errors and one clinically insignificant error, resulting in a green score of 0.5625.",
+        "critical_errors_found": [
+          "Worsening combination of pleural effusion, pulmonary edema and possibly pneumonia particularly in the right lower lobe",
+          "Multiple pulmonary nodules concerning for metastases"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 5,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 7,
+        "green_score": 0.29,
+        "reasoning": "The AI missed key findings like worsening pulmonary edema and right lower lobe infiltrate, and incorrectly localized pneumonia to the left lung.",
+        "critical_errors_found": [
+          "Incorrect localization of pneumonia",
+          "Missing finding: Worsening pulmonary edema"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.4745,
+    "score_std": 0.1305
+  },
+  {
+    "id": "033",
+    "labels": [
+      "Blunting of the right CP angle otherwise normal chest."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe lungs are clear without infiltrate. The cardiac and mediastinal silhouettes are normal. There is minimal right CP angle blunting compatible with either a tiny effusion or small amount of pleural thickening. The bony thorax appears normal.\n\n=== CLINICAL_EVIDENCE ===\nRetrie...",
+    "reference": "FINDINGS: The lungs are clear without infiltrate. The cardiac and mediastinal silhouettes are normal. There is minimal right CP angle blunting compatible with either a tiny effusion or is small amount of pleural thickening the bony thorax appears normal.\nIMPRESSION: Blunting of the right CP angle ot...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.9375,
+        "reasoning": "The generated report matches the reference in all clinically significant findings and most of the incidental findings, with an extra normal finding mentioned.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI report contains a clinically significant error (wrong diagnosis) and multiple clinically insignificant errors, resulting in an overall score of 0.625.",
+        "critical_errors_found": [
+          "Wrong diagnosis"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.9375,
+        "reasoning": "The AI report accurately captured all findings and did not introduce clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8333,
+    "score_std": 0.1473
+  },
+  {
+    "id": "034",
+    "labels": [
+      "In comparison to study obtained four hours prior, there is interval decrease in right apical pneumothorax, now small."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nTiny right apical pneumothorax. Right hemidiaphragm shows trace amount of free air. Slightly decreased lung volume. Multiple suture lines indicating recent VATS. Normal-sized heart and hilar mediastinal contours.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: \n- Small right...",
+    "reference": "FINDINGS: Semi-upright portable view of the chest demonstrates small right apical pneumothorax, which has decreased in size since study obtained four hours prior. No appreciable left pneumothorax. Subcutaneous gas of the chest wall is unchanged. Low lung volumes. No focal consolidation or pleural ef...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 2,
+        "missing_findings": 1,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The AI report correctly identifies the small right apical pneumothorax and mentions the trace amount of free air under the right hemidiaphragm, but misses the mention of decreased size since study obtained four hours prior.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.67,
+        "reasoning": "The AI report incorrectly diagnoses a small right apical pneumothorax as a residual effect of VATS, which is not supported by the reference report's findings and clinical context.",
+        "critical_errors_found": [
+          "Wrong diagnosis (small right apical pneumothorax as residual effect of VATS)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 4,
+        "missing_findings": 2,
+        "total_reference_findings": 8,
+        "green_score": 0.57,
+        "reasoning": "The AI missed the decrease in pneumothorax size since the previous study and incorrectly attributed findings to VATS.",
+        "critical_errors_found": [
+          "Missing the interval decrease in right apical pneumothorax."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.699,
+    "score_std": 0.1189
+  },
+  {
+    "id": "035",
+    "labels": [
+      "Persistent small right pleural effusion with patchy right basilar opacity, potentially atelectasis. Mild pulmonary vascular congestion. No large pneumothorax identified on this supine limited exam."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nTwo enteric tube tips terminate within the stomach. Heart size is borderline enlarged. Mediastinal and hilar contours are similar. Mild upper zone vascular redistribution. Persistent small right pleural effusion with adjacent right basilar opacity. Left lung is grossly clear,...",
+    "reference": "FINDINGS: Two enteric tube tips terminate within the stomach. Heart size is borderline enlarged. Mediastinal and hilar contours are similar. There is mild upper zone vascular redistribution, which suggests mild pulmonary vascular congestion. Additionally, there is a persistent small right pleural ef...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 2,
+        "total_reference_findings": 9,
+        "green_score": 0.89,
+        "reasoning": "The generated report correctly identifies most findings and the overall impression is similar to the reference. However, it incorrectly mentions low lung volumes (which is clinically insignificant) and fails to mention mild pulmonary vascular congestion and persistent small right pleural effusion with adjacent right basilar opacity (which are clinically significant).",
+        "critical_errors_found": [
+          "mild pulmonary vascular congestion",
+          "persistent small right pleural effusion with adjacent right basilar opacity"
+        ],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.5556,
+        "reasoning": "The AI report contains two clinically significant errors (missed atelectasis and misdiagnosed low lung volumes) and one clinically insignificant error (slightly different wording for the same finding).",
+        "critical_errors_found": [
+          "Mild pulmonary congestion not mentioned",
+          "Atelectasis not diagnosed"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 9,
+        "missing_findings": 2,
+        "total_reference_findings": 12,
+        "green_score": 0.67,
+        "reasoning": "The AI missed the mild pulmonary vascular congestion and the suggestion of atelectasis.",
+        "critical_errors_found": [
+          "The AI incorrectly states that there is no pleural effusion."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7052,
+    "score_std": 0.1388
+  },
+  {
+    "id": "036",
+    "labels": [
+      "Nasogastric tube below the diaphragm, in the stomach. Persistant right basilar and retrocardiac atelectasis with possible left pleural effusion."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nA single portable chest radiograph shows a nasogastric tube coursing below the diaphragm and terminating within the stomach. A right PICC terminates at the mid SVC. Plate-like atelectasis is observed at the right base. Retrocardiac and left basilar opacity is present, resembl...",
+    "reference": "FINDINGS: Single portable chest radiograph was provided. A nasogastric tube courses below the diaphragm and terminates within the stomach. A right PICC terminates at the mid SVC. Again seen is plate-like atelectasis at the right base. Retrocardiac and left basilar opacity is similar to the prior rad...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 2,
+        "total_reference_findings": 9,
+        "green_score": 0.89,
+        "reasoning": "The generated report correctly identifies most findings and matches the impression. However, it misses 'right PICC terminates at the mid SVC' and 'heart remains enlarged', which are clinically significant but not critical errors.",
+        "critical_errors_found": [
+          "Right PICC terminates at the mid SVC",
+          "Heart remains enlarged"
+        ],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 9,
+        "missing_findings": 0,
+        "total_reference_findings": 13,
+        "green_score": 0.6521929087621929,
+        "reasoning": "The AI report contains two clinically significant errors (missed atelectasis and pleural effusion misdiagnosis) and one clinically insignificant error, resulting in a green score of approximately 0.65.",
+        "critical_errors_found": [
+          "Right basilar atelectasis not mentioned",
+          "Pleural effusion misdiagnosed as retrocardiac opacity"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 12,
+        "missing_findings": 0,
+        "total_reference_findings": 13,
+        "green_score": 0.923,
+        "reasoning": "The AI report accurately captures all clinically significant findings and only deviates slightly in wording.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8217,
+    "score_std": 0.1206
+  },
+  {
+    "id": "037",
+    "labels": [
+      "New right basilar opacity, which may represent pneumonia in the correct clinical setting. Improvement in left basilar opacity, with persistent small left pleural effusion."
+    ],
+    "generated": "**VISUAL_FINDINGS**\nA right PICC line with tip terminating in the mid SVC. \nCardiomediastinal and hilar contours remain stable. \nThere is improvement in the left basilar opacity. \nA small left pleural effusion persists. \nThere is no right pleural effusion. \nThere is no pneumothorax. \nA new right bas...",
+    "reference": "FINDINGS: Again seen is a right PICC line with tip terminating in the mid SVC. Cardiomediastinal and hilar contours remain stable. There is improvement in the left basilar opacity. A small left pleural effusion persists. There is no right pleural effusion. There is no pneumothorax. A new right basil...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 8,
+        "missing_findings": 1,
+        "total_reference_findings": 9,
+        "green_score": 0.888888888888889,
+        "reasoning": "The generated report matches the reference in all clinically significant findings and most of the incidental findings. The only difference is that the reference report mentions a new right basilar opacity which may represent pneumonia in the correct clinical setting, while the generated report simply states it as likely atelectasis, although pneumonia cannot be excluded.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 9,
+        "missing_findings": 0,
+        "total_reference_findings": 12,
+        "green_score": 0.75,
+        "reasoning": "The AI report missed mentioning the persistent right pleural effusion, which is a clinically significant error.",
+        "critical_errors_found": [
+          "Persistent left pleural effusion not mentioned"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 12,
+        "missing_findings": 0,
+        "total_reference_findings": 12,
+        "green_score": 1.0,
+        "reasoning": "The AI report perfectly matches the reference report in terms of clinically significant findings.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8796,
+    "score_std": 0.1023
+  },
+  {
+    "id": "038",
+    "labels": [
+      "Appropriately placed NG tube."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe lungs are clear, the cardiomediastinal silhouette and hilar regions are normal, and there is no pleural effusion or pneumothorax. The partially visualized abdomen shows normal bowel gas patterns. \n\nNG tube ends in the gastric antrum in appropriate position. Left PICC ends...",
+    "reference": "FINDINGS: The lung apices are not depicted. NG tube ends in the gastric antrum in appropriate position. The lungs are clear, the cardiomediastinal silhouette and hila are normal. There is no pleural effusion and no pneumothorax. Partially visualized abdomen shows normal bowel gas pattern.\nIMPRESSION...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.857,
+        "reasoning": "The generated report correctly identifies the normal cardiomediastinal silhouette, hila, absence of pleural effusion and pneumothorax, and normal bowel gas pattern. It also correctly mentions the NG tube in the correct position. The extra finding of low lung volumes with bibasilar consolidation is a clinically insignificant error as it does not contradict the normal findings mentioned.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI report contains two clinically significant errors and one clinically insignificant error, resulting in a green score of 0.625.",
+        "critical_errors_found": [
+          "Wrong diagnosis (reporting normal lungs when bibasilar consolidation is present)",
+          "Incorrect anatomical location of finding (bibsilar consolidation not mentioned correctly)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.57,
+        "reasoning": "The AI incorrectly reported bibasilar consolidation and low lung volumes, which were not present in the reference report.",
+        "critical_errors_found": [
+          "Incorrectly reported bibasilar consolidation and low lung volumes."
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.684,
+    "score_std": 0.1244
+  },
+  {
+    "id": "039",
+    "labels": [
+      "Mild to moderate left pleural effusion is decreased in size from the prior exam has as is adjacent left basal atelectasis. No evidence of pneumothorax."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nMild left basal atelectasis, marked thoracolumbar dextroscoliosis, clear right lung, tiny coils projecting over the medial right hemithorax.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- FINDINGS: Mild to moderate cardiomegaly is stable from the prior examination. There...",
+    "reference": "FINDINGS: Mild to moderate cardiomegaly is stable from the prior examination. There has been an interval decrease in adjacent left basal atelectasis. The right lung is clear. No evidence of pneumothorax. Marked thoracolumbar dextroscoliosis is unchanged.\nIMPRESSION: Mild to moderate left pleural eff...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.8,
+        "reasoning": "The generated report correctly identifies all the matched findings and does not contain any clinically significant errors. However, it incorrectly mentions an additional finding of 'tiny coils projecting over the medial right hemithorax', which is a clinically insignificant error.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 3,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.6428571428571429,
+        "reasoning": "The AI report contains two clinically significant errors (wrong diagnosis and anatomical location of findings) and one clinically insignificant error, resulting in a score below perfect but not critically flawed.",
+        "critical_errors_found": [
+          "Wrong diagnosis of left pleural effusion as persistent instead of decreased",
+          "Anatomically incorrect description of right lung opacification"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 5,
+        "missing_findings": 1,
+        "total_reference_findings": 8,
+        "green_score": 0.46,
+        "reasoning": "The AI missed the left pleural effusion and incorrectly reported increased opacification in the right lung.",
+        "critical_errors_found": [
+          "Incorrectly reported increased opacification of the right lung base",
+          "Missing finding: Left pleural effusion"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6343,
+    "score_std": 0.1389
+  },
+  {
+    "id": "040",
+    "labels": [
+      "Unremarkable study."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe lungs appear clear with no signs of consolidation or effusion. The cardiac silhouette and mediastinal contours are within normal limits for technique. A right subclavian catheter is visible terminating at the level of the superior vena cava. \n\nLeft paramediastinal surgica...",
+    "reference": "FINDINGS: The lungs remain clear. There is no pneumothorax. The cardiac silhouette and mediastinal contours are within normal limits for technique. There are no concerning bone findings. A right subclavian catheter is in place, as before, terminating at the level of the superior vena cava.\nIMPRESSIO...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.8,
+        "reasoning": "The generated report correctly identifies the clear lungs, normal cardiac silhouette and mediastinal contours, and the presence of a right subclavian catheter. The extra mention of 'Left paramediastinal surgical skin and a surgical drain' is clinically insignificant.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 5,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.6470588235294118,
+        "reasoning": "The AI report contains a clinically significant error by missing the presence of a left paramediastinal surgical skin and drain, which is present in the reference report.",
+        "critical_errors_found": [
+          "Left paramediastinal surgical skin and a surgical drain are present"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI missed the mention of a right subclavian catheter in the generated report.",
+        "critical_errors_found": [
+          "Missing finding: Right subclavian catheter"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6907,
+    "score_std": 0.0778
+  },
+  {
+    "id": "041",
+    "labels": [
+      "No acute cardiopulmonary process."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe lungs appear clear with no visible consolidation. The cardiac silhouette is normal. The mediastinal structures are unremarkable. A small amount of aortic knob calcification is observed.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature supports the presence of aortic knob c...",
+    "reference": "FINDINGS: The lungs are clear without focal consolidation. No pleural effusion or pneumothorax is seen. The cardiac and mediastinal silhouettes are unremarkable. Aortic knob calcification is seen.\nIMPRESSION: No acute cardiopulmonary process....",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.833,
+        "reasoning": "The generated report correctly identifies the findings in the reference report and provides additional information about aortic knob calcification without introducing any clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report misses the mention of a pneumothorax and large effusion, which are clinically significant findings not mentioned in the generated report.",
+        "critical_errors_found": [
+          "Pneumothorax",
+          "Large Effusion"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.923,
+        "reasoning": "The AI report accurately captures all key findings and avoids clinically significant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8353,
+    "score_std": 0.0706
+  },
+  {
+    "id": "042",
+    "labels": [
+      "Interval removal of the endotracheal tube. NG tube and right PICC line in appropriate positioning. Apparent resolution of the small bilateral pleural effusions."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe patient's chest X-ray shows the NG tube positioned correctly below the diaphragm with the tip and side hole overlying the stomach. The right PICC line is terminating in the low SVC. The lungs are clear, with no signs of consolidation, edema, pneumothorax, or pleural effus...",
+    "reference": "FINDINGS: There has been interval removal of the endotracheal tube. The NG tube is seen in appropriate positioning coursing below the diaphragm with the tip and side hole overlying the stomach. There is a right PICC line terminating in the low SVC. The lungs are otherwise clear. Heart size is normal...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 1,
+        "total_reference_findings": 8,
+        "green_score": 0.875,
+        "reasoning": "The generated report correctly identifies the position of the NG tube and PICC line, the absence of pneumothorax, pleural effusion, consolidation, or edema in the lungs, and the normal size and contour of the heart, mediastinal, and hilar structures. However, it misses the mention of interval removal of the endotracheal tube which is a clinically significant finding.",
+        "critical_errors_found": [
+          "Interval removal of the endotracheal tube"
+        ],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 8,
+        "missing_findings": 2,
+        "total_reference_findings": 10,
+        "green_score": 0.7333,
+        "reasoning": "The AI report missed the small bilateral pleural effusions, which are a critical finding in the reference report.",
+        "critical_errors_found": [
+          "small bilateral pleural effusions"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 10,
+        "missing_findings": 1,
+        "total_reference_findings": 11,
+        "green_score": 0.86,
+        "reasoning": "The AI report accurately captures most findings but misses the mention of interval endotracheal tube removal and uses repetitive phrasing.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8228,
+    "score_std": 0.0636
+  },
+  {
+    "id": "043",
+    "labels": [
+      "Right mainstem intubation. , D. by , D."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nEndotracheal tube terminating in the right mainstem bronchus. Hazy right basilar opacity. Nasogastric tube not visible. Thoracolumbar S-shaped scoliosis present.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: \n- Endotracheal tube placement can lead to complications such as ...",
+    "reference": "FINDINGS: Endotracheal tube is seen with tip in the right mainstem bronchus. Hazy right basilar opacity may be due to atelectasis. Left lung is grossly clear. The cardiomediastinal silhouette is within normal limits. No acute osseous abnormalities. Thoracolumbar S-shaped scoliosis is noted.\nIMPRESSI...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 3,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.6,
+        "reasoning": "The generated report correctly identifies the endotracheal tube, hazy right basilar opacity, and thoracolumbar scoliosis but misses the mention of the left lung being clear.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 4,
+        "missing_findings": 3,
+        "total_reference_findings": 7,
+        "green_score": 0.571,
+        "reasoning": "The AI generated report contains two clinically significant errors (wrong diagnosis and missing finding) and one clinically insignificant error, resulting in a green score of approximately 0.57.",
+        "critical_errors_found": [
+          "Wrong diagnosis of hazy right basilar opacity as atelectasis or fluid accumulation",
+          "Missing mention of nasogastric tube"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 1,
+        "total_reference_findings": 6,
+        "green_score": 0.8333333333333334,
+        "reasoning": "The AI report missed the mention of a normal cardiomediastinal silhouette.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.6681,
+    "score_std": 0.1174
+  },
+  {
+    "id": "044",
+    "labels": [
+      "Enteric tube tip in the proximal stomach."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nEnteric tube tip is in the proximal stomach.\nMore prominent right basilar opacity.\nAdjacent right pleural effusion.\nEndotracheal tube tip in good position.\nBilateral perihilar infiltrates.\nMildly worsened right basilar opacity.\nIncreased small pleural effusions.\nSurgical clip...",
+    "reference": "FINDINGS: Enteric tube tip is in the proximal stomach, new since prior. More prominent right basilar opacity and adjacent right pleural effusion. Otherwise stable.\nIMPRESSION: Enteric tube tip in the proximal stomach....",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 4,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.8,
+        "reasoning": "The AI report correctly identifies the enteric tube tip in the proximal stomach and the right basilar opacity with pleural effusion, but incorrectly mentions an endotracheal tube tip and bilateral perihilar infiltrates which are not present in the reference. The surgical clips and increased heart size/pulmonary vascularity are clinically insignificant errors.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 3,
+        "matched_findings": 1,
+        "missing_findings": 4,
+        "total_reference_findings": 5,
+        "green_score": 0.26666666666666666,
+        "reasoning": "The AI generated report contains multiple clinically significant errors and missing findings, resulting in a low green score.",
+        "critical_errors_found": [
+          "Wrong diagnosis (enteric tube tip in the proximal stomach vs. enteric tube tip in mid stomach), Incorrect anatomical location of finding (right pleural effusion vs. right upper quadrant)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 4,
+        "matched_findings": 3,
+        "missing_findings": 1,
+        "total_reference_findings": 5,
+        "green_score": 0.4,
+        "reasoning": "The AI missed the mention of 'new since prior' regarding the enteric tube tip.",
+        "critical_errors_found": [
+          "Missing finding: 'More prominent right basilar opacity and adjacent right pleural effusion. Otherwise stable.'"
+        ],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.4889,
+    "score_std": 0.2266
+  },
+  {
+    "id": "045",
+    "labels": [
+      "Significant interval worsening, consider worsening pneumonia, aspiration or edema."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nBilateral lower lung opacities with bronchovascular distribution; elevated right hemidiaphragm; borderline heart size; thoracolumbar curve.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: Significant interval worsening of bilateral perihilar, lower lung opacities, with bronc...",
+    "reference": "FINDINGS: Significant interval worsening of bilateral perihilar, lower lung opacities, with bronchovascular distribution, consider worsening pneumonia, aspiration or edema. Elevated right hemidiaphragm stable. Borderline heart size. Thoracolumbar curve.\nIMPRESSION: Significant interval worsening, co...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 1,
+        "total_reference_findings": 6,
+        "green_score": 0.833,
+        "reasoning": "The generated report correctly identifies all the major findings and their locations but misses the 'interval worsening' mentioned in the reference report.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.625,
+        "reasoning": "The AI report contains two clinically significant errors (missed the clinical context and incorrect interpretation of findings) and one clinically insignificant error, resulting in a moderate score.",
+        "critical_errors_found": [
+          "Wrong severity assessment",
+          "Incorrect anatomical location of a finding"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.875,
+        "reasoning": "The AI report accurately captures most findings but misses the 'stable' descriptor for the elevated right hemidiaphragm.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7777,
+    "score_std": 0.1093
+  },
+  {
+    "id": "046",
+    "labels": [
+      "Increased central vascular congestion with new mild pulmonary edema. Worsening bibasilar opacities, concerning for worsening atelectasis, though aspiration should be considered in the proper clinical context. Increased small right pleural effusion. Increased heart size, now top-normal."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nIncreased vascular congestion, mild interstitial edema, bibasilar opacities, small right pleural effusion, prominent right convex scoliosis of the upper thoracic spine, and left convex scoliosis of the lower thoracic spine.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: Inc...",
+    "reference": "FINDINGS: Compared to chest radiographs from , there is increased vascular congestion with new mild interstitial edema. Lung volumes have decreased. Bibasilar opacities have worsened. Small right pleural effusion persists. No appreciable effusion on the left. Heart is top-normal in size, increased. ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 2,
+        "total_reference_findings": 9,
+        "green_score": 0.889,
+        "reasoning": "The generated report correctly identifies most findings and provides a reasonable deductive reasoning process, but it misses the specific mention of 'worsened lung volumes' and 'no appreciable effusion on the left'.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 2,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 13,
+        "green_score": 0.6923076923076923,
+        "reasoning": "The AI report contains two clinically significant errors and one clinically insignificant error, resulting in a moderate green score.",
+        "critical_errors_found": [
+          "Wrong severity assessment (mild vs severe) for bibasilar opacities",
+          "Incorrect anatomical location of findings"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 10,
+        "missing_findings": 1,
+        "total_reference_findings": 11,
+        "green_score": 0.87,
+        "reasoning": "The AI report accurately captures most findings but misses the mention of decreased lung volumes and uses slightly different wording in some instances.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.8171,
+    "score_std": 0.0886
+  },
+  {
+    "id": "047",
+    "labels": [
+      "Slight prominence of the hila suggest pulmonary vascular engorgement without overt pulmonary edema. Basilar atelectasis without definite focal consolidation."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nMild bibasilar atelectasis is observed.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- Findings: Mild bibasilar atelectasis is noted without definite focal consolidation. No large pleural effusion or evidence of pneumothorax is seen. The cardiac silhouette is top-normal ...",
+    "reference": "FINDINGS: Mild bibasilar atelectasis is noted without definite focal consolidation. No large pleural effusion or evidence of pneumothorax is seen. The cardiac silhouette is top-normal to mildly enlarged. Mediastinal contours are unremarkable. Slight prominence of the hila suggest pulmonary vascular ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 2,
+        "missing_findings": 0,
+        "total_reference_findings": 6,
+        "green_score": 0.8333333333333334,
+        "reasoning": "The AI report correctly identifies the bibasilar atelectasis and pulmonary vascular engorgement, but misses slight differences in wording for the same findings.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 4,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.75,
+        "reasoning": "The AI report contains a clinically significant error by misidentifying the atelectasis as mild bibasilar instead of the reference's described bibasilar atelectasis without definite focal consolidation.",
+        "critical_errors_found": [
+          "clinically_significant_errors"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 5,
+        "missing_findings": 2,
+        "total_reference_findings": 7,
+        "green_score": 0.643,
+        "reasoning": "The AI report accurately captured most key findings but missed some details about the cardiac silhouette and pulmonary vascular engorgement.",
+        "critical_errors_found": [],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7421,
+    "score_std": 0.0779
+  },
+  {
+    "id": "048",
+    "labels": [
+      "No pulmonary edema. No pneumothorax."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nEndotracheal tube, feeding tube, and right internal jugular central line remain unchanged in position. Cardiac and mediastinal contours appear stable. Persistent volume loss in the left lower lung and right lung remains hyperexpanded. Improved aeration at the left base.\n\n=== ...",
+    "reference": "FINDINGS: Endotracheal tube, feeding tube, and right internal jugular central line are unchanged in position. Overall cardiac and mediastinal contours are likely stable. There is persistent volume loss in the left lower lung and the right lung remains hyperexpanded. Overall, however, there is some i...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.875,
+        "reasoning": "The generated report correctly identifies all the findings and their locations, but adds an extra normal finding (improved aeration at the left base is already mentioned in the visual findings).",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 6,
+        "missing_findings": 0,
+        "total_reference_findings": 7,
+        "green_score": 0.8571428571428571,
+        "reasoning": "The AI report contains a clinically significant error by incorrectly interpreting the improved aeration as indicating ongoing respiratory distress, which is not supported by the reference report's clear impression of no pulmonary edema or pneumothorax.",
+        "critical_errors_found": [
+          "Wrong severity assessment (implied improvement in aeration misinterpreted as ongoing compromise)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.89,
+        "reasoning": "The AI report accurately captures all clinically significant findings and only has a minor stylistic difference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.874,
+    "score_std": 0.0134
+  },
+  {
+    "id": "049",
+    "labels": [
+      "Dobhoff tube tip lies within the body of the stomach, slightly advanced from the prior exam. Left lower lobe aspiration."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nThe Dobhoff tube's tip projects over the stomach, slightly advanced. A focal opacity with air bronchograms in the left lower lung has increased. The lungs are hyperinflated. Linear lucencies project over the left lateral hemithorax. The heart is normal in size. The mediastina...",
+    "reference": "FINDINGS: The tip of the Dobhoff tube projects over the expected region of the stomach, slightly advanced compared to the prior exam. Focal opacity with air bronchograms in the left lower lung has increased since but is overall similar to , suggesting aspiration. The lungs remain hyperinflated. The ...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 8,
+        "missing_findings": 2,
+        "total_reference_findings": 10,
+        "green_score": 0.8,
+        "reasoning": "The generated report correctly identifies most findings and provides additional clinical evidence, but misses the specific mention of the Dobhoff tube's advancement compared to the prior exam and the absence of pleural effusion, pneumothorax, or edema.",
+        "critical_errors_found": [],
+        "overall_quality": "GOOD",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 13,
+        "green_score": 0.6923076923076923,
+        "reasoning": "The AI report contains a clinically significant error regarding the diagnosis of aspiration and incorrectly interprets the linear lucencies over the left lateral hemithorax.",
+        "critical_errors_found": [
+          "Wrong severity assessment (mild vs severe) for focal opacity with air bronchograms"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 2,
+        "matched_findings": 10,
+        "missing_findings": 3,
+        "total_reference_findings": 13,
+        "green_score": 0.77,
+        "reasoning": "The AI report accurately captured most findings but missed some details and included unnecessary clinical speculation.",
+        "critical_errors_found": [],
+        "overall_quality": "ACCEPTABLE",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.7541,
+    "score_std": 0.0454
+  },
+  {
+    "id": "050",
+    "labels": [
+      "Interval development of right lower lobe consolidation concerning for pneumonia. Persistent though decreased opacity in the left lung base may represent residual pneumonia/aspiration."
+    ],
+    "generated": "=== VISUAL_FINDINGS ===\nA tracheostomy tube is seen projecting over the superior mediastinum. Interval development of right lower lobe opacities concerning for pneumonia. Residual opacity in the left lung base is slightly decreased from prior though may represent persistent pneumonia or aspiration. ...",
+    "reference": "FINDINGS: A tracheostomy tube is seen projecting over the superior mediastinum. Interval development of right lower lobe opacities concerning for pneumonia. Residual opacity in the left lung base is slightly decreased from prior though may represent persistent pneumonia or aspiration. No large effus...",
+    "judge_scores": [
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.875,
+        "reasoning": "The generated report correctly identifies all major findings and their locations, but it provides an additional and potentially misleading impression about the right medial opacity.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Mistral-7B",
+        "model": "mistral",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 1,
+        "clinically_insignificant_errors": 0,
+        "matched_findings": 7,
+        "missing_findings": 0,
+        "total_reference_findings": 8,
+        "green_score": 0.9375,
+        "reasoning": "The AI report contains a clinically significant error by misdiagnosing the persistent left lung base opacity as persistence rather than resolution, which could be harmful.",
+        "critical_errors_found": [
+          "Wrong severity assessment (persistent vs resolution)"
+        ],
+        "overall_quality": "POOR",
+        "judge": "Qwen2.5-3B",
+        "model": "qwen2.5:3b",
+        "status": "ok"
+      },
+      {
+        "clinically_significant_errors": 0,
+        "clinically_insignificant_errors": 1,
+        "matched_findings": 9,
+        "missing_findings": 0,
+        "total_reference_findings": 9,
+        "green_score": 0.989,
+        "reasoning": "The AI report accurately captured all clinically significant findings and only had a minor stylistic difference.",
+        "critical_errors_found": [],
+        "overall_quality": "EXCELLENT",
+        "judge": "Gemma2-9B",
+        "model": "gemma2",
+        "status": "ok"
+      }
+    ],
+    "aggregated_green": 0.9338,
+    "score_std": 0.0466
+  }
+]

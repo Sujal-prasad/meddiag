@@ -28,7 +28,6 @@ import logging
 import os
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Optional
 
@@ -267,14 +266,26 @@ def check_ollama() -> bool:
         return False
 
 
-def query_judge(judge: dict, generated: str, reference: str) -> dict:
+def trim_text(text: str, max_chars: int = 800) -> str:
+    """Trim text to max_chars to avoid context overflow in smaller models."""
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars] + "\n...[truncated for brevity]"
+
+
+def query_judge(judge: dict, generated: str, reference: str,
+                max_retries: int = 2) -> dict:
     """
     Send a report pair to one Ollama judge and parse the GREEN score response.
-    Returns a dict with the score breakdown.
+    Trims prompts and retries on failure.
     """
+    # Trim to prevent context overflow — main cause of 500 errors
+    generated_trim = trim_text(generated, max_chars=600)
+    reference_trim = trim_text(reference, max_chars=600)
+
     prompt = GREEN_USER_TEMPLATE.format(
-        reference=reference,
-        generated=generated,
+        reference=reference_trim,
+        generated=generated_trim,
     )
 
     payload = {
@@ -283,65 +294,80 @@ def query_judge(judge: dict, generated: str, reference: str) -> dict:
         "system": GREEN_SYSTEM_PROMPT,
         "stream": False,
         "options": {
-            "temperature": 0.0,   # Set to 0.0 for strict determinism and better JSON formatting
-            "top_p":       0.9,
-            "num_predict": 512,
+            "temperature":   0.1,
+            "top_p":         0.9,
+            "num_predict":   400,
+            "num_ctx":       2048,   # explicit context window limit
         },
     }
 
-    try:
-        r = requests.post(OLLAMA_URL, json=payload, timeout=120)
-        r.raise_for_status()
-        raw = r.json().get("response", "").strip()
+    for attempt in range(1, max_retries + 1):
+        try:
+            logger.info(f"    {judge['name']} — attempt {attempt}/{max_retries}")
+            r = requests.post(OLLAMA_URL, json=payload, timeout=180)
+            r.raise_for_status()
+            raw = r.json().get("response", "").strip()
 
-        # Extract JSON from response (handle markdown code blocks)
-        if "```json" in raw:
-            raw = raw.split("```json")[1].split("```")[0].strip()
-        elif "```" in raw:
-            raw = raw.split("```")[1].split("```")[0].strip()
+            # Extract JSON from response
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0].strip()
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0].strip()
+            start = raw.find("{")
+            end   = raw.rfind("}") + 1
+            if start != -1 and end > start:
+                raw = raw[start:end]
 
-        # Find JSON object
-        start = raw.find("{")
-        end   = raw.rfind("}") + 1
-        if start != -1 and end > start:
-            raw = raw[start:end]
+            result = json.loads(raw)
 
-        result = json.loads(raw)
+            # Compute GREEN score if missing
+            if "green_score" not in result:
+                mf  = result.get("matched_findings", 0)
+                cse = result.get("clinically_significant_errors", 0)
+                cie = result.get("clinically_insignificant_errors", 0)
+                trf = max(result.get("total_reference_findings", 1), 1)
+                result["green_score"] = max(0.0, min(1.0,
+                    (mf - cse - 0.5 * cie) / trf
+                ))
 
-        # Validate and compute GREEN score if not present
-        if "green_score" not in result:
-            mf  = result.get("matched_findings", 0)
-            cse = result.get("clinically_significant_errors", 0)
-            cie = result.get("clinically_insignificant_errors", 0)
-            trf = max(result.get("total_reference_findings", 1), 1)
-            result["green_score"] = max(0.0, min(1.0,
-                (mf - cse - 0.5 * cie) / trf
-            ))
+            result["judge"]  = judge["name"]
+            result["model"]  = judge["model"]
+            result["status"] = "ok"
+            return result
 
-        result["judge"]  = judge["name"]
-        result["model"]  = judge["model"]
-        result["status"] = "ok"
-        return result
+        except json.JSONDecodeError as e:
+            logger.warning(f"    {judge['name']} invalid JSON on attempt {attempt}: {e}")
+            if attempt == max_retries:
+                return {"judge": judge["name"], "model": judge["model"],
+                        "status": "parse_error", "green_score": None,
+                        "reasoning": "Could not parse judge response."}
+            time.sleep(3)
 
-    except json.JSONDecodeError as e:
-        logger.warning(f"    {judge['name']} returned invalid JSON: {e}")
-        return {
-            "judge":  judge["name"], "model": judge["model"],
-            "status": "parse_error", "green_score": None,
-            "reasoning": "Could not parse judge response.",
-        }
-    except Exception as e:
-        logger.warning(f"    {judge['name']} failed: {e}")
-        return {
-            "judge":  judge["name"], "model": judge["model"],
+        except requests.exceptions.HTTPError as e:
+            logger.warning(f"    {judge['name']} HTTP {e.response.status_code} "
+                           f"on attempt {attempt} — waiting 10s before retry...")
+            if attempt == max_retries:
+                return {"judge": judge["name"], "model": judge["model"],
+                        "status": "error", "green_score": None,
+                        "reasoning": str(e)}
+            time.sleep(10)   # give Ollama time to free memory
+
+        except Exception as e:
+            logger.warning(f"    {judge['name']} failed on attempt {attempt}: {e}")
+            if attempt == max_retries:
+                return {"judge": judge["name"], "model": judge["model"],
+                        "status": "error", "green_score": None,
+                        "reasoning": str(e)}
+            time.sleep(5)
+
+    return {"judge": judge["name"], "model": judge["model"],
             "status": "error", "green_score": None,
-            "reasoning": str(e),
-        }
+            "reasoning": "All retries exhausted."}
 
 
 def judge_all_reports(report_pairs: list[dict]) -> list[dict]:
     """
-    For each report pair, query all 3 judges sequentially.
+    For each report pair, query all 3 judges in parallel.
     Returns the full results list.
     """
     if not check_ollama():
@@ -369,24 +395,19 @@ def judge_all_reports(report_pairs: list[dict]) -> list[dict]:
             "judge_scores": [],
         }
 
-        # Sequential loading to prevent Ollama VRAM overload (max_workers=1)
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            futures = {
-                executor.submit(
-                    query_judge, judge,
-                    pair["generated"], pair["reference"]
-                ): judge
-                for judge in JUDGES
-            }
-            for future in as_completed(futures):
-                judge  = futures[future]
-                result = future.result()
-                score  = result.get("green_score")
-                status = result.get("status", "unknown")
-                logger.info(f"    {judge['name']:15s} → "
-                            f"GREEN={score:.3f}" if score is not None
-                            else f"    {judge['name']:15s} → FAILED ({status})")
-                report_result["judge_scores"].append(result)
+        # Run judges SEQUENTIALLY — prevents Ollama OOM / 500 errors
+        # Each model must fully unload before the next one loads
+        for judge in JUDGES:
+            logger.info(f"    Querying {judge['name']}...")
+            result = query_judge(judge, pair["generated"], pair["reference"])
+            score  = result.get("green_score")
+            status = result.get("status", "unknown")
+            if score is not None:
+                logger.info(f"    {judge['name']:15s} → GREEN={score:.3f}")
+            else:
+                logger.warning(f"    {judge['name']:15s} → FAILED ({status})")
+            report_result["judge_scores"].append(result)
+            time.sleep(3)   # let Ollama fully unload before next model
 
         # Aggregate
         valid_scores = [
@@ -511,286 +532,251 @@ def save_fig(fig, name):
     logger.info(f"  Saved: {FIG_DIR / name}.png")
 
 
+
+def _hgrid(ax):
+    ax.yaxis.grid(True, color="#E5E5E5", ls="-", lw=0.6)
+    ax.xaxis.grid(False)
+    ax.set_axisbelow(True)
+
+
 def plot_aggregated_scores(results: list[dict]) -> None:
-    """Bar chart of aggregated GREEN score per report with error bars."""
-    ids    = [r["id"] for r in results]
-    scores = [r.get("aggregated_green", 0) or 0 for r in results]
-    stds   = [r.get("score_std", 0) or 0 for r in results]
-    labels = [", ".join(r.get("labels", []))[:20] for r in results]
+    """Bar chart — one bar per report, colored by quality tier."""
+    ids    = [r["id"]                               for r in results]
+    scores = [r.get("aggregated_green", 0) or 0     for r in results]
+    stds   = [r.get("score_std", 0) or 0            for r in results]
+    labels = [", ".join(r.get("labels", []))[:18]   for r in results]
 
-    # Color bars by score quality
-    colors = [
-        C_FOREST  if s >= 0.7 else
-        C_AMBER   if s >= 0.4 else
-        C_CRIMSON
-        for s in scores
-    ]
+    colors = [C_FOREST if s >= 0.7 else C_AMBER if s >= 0.4 else C_CRIMSON
+              for s in scores]
 
-    fig, ax = plt.subplots(figsize=(max(10, len(ids) * 0.8), 5.5))
+    fig, ax = plt.subplots(figsize=(max(10, len(ids) * 0.9), 6.5),
+                            constrained_layout=True)
     x = np.arange(len(ids))
-    bars = ax.bar(x, scores, color=colors, edgecolor="#111111",
-                  linewidth=0.8, width=0.6,
-                  yerr=stds, capsize=4, error_kw={"elinewidth": 1.5,
-                                                  "ecolor": "#555555"})
+    ax.bar(x, scores, color=colors, edgecolor="#111111",
+           linewidth=0.8, width=0.62,
+           yerr=stds, capsize=4,
+           error_kw={"elinewidth": 1.5, "ecolor": "#555555"})
 
-    # Value labels above bars
-    ymin, ymax = ax.get_ylim() if ax.get_ylim()[1] > 0 else (0, 1)
-    ax.set_ylim(0, 1.12)
-    for bar, s in zip(bars, scores):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + max(stds) + 0.03,
-            f"{s:.3f}",
-            ha="center", va="bottom", fontsize=9, fontweight="bold",
-            color="#0D0D0D",
+    ax.set_ylim(0, 1.28)
+    # Labels above bars — axes-relative pad so they never touch error bars
+    yrange = 1.28
+    for xi, s, e in zip(x, scores, stds):
+        ax.text(xi, s + e + yrange * 0.05, f"{s:.3f}",
+                ha="center", va="bottom", fontsize=9, fontweight="bold",
+                color="#0D0D0D",
+                bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
+                          edgecolor="#BBBBBB", linewidth=0.7, alpha=1.0))
+
+    ax.axhline(float(np.mean(scores)), color=C_NAVY, ls="--", lw=1.8)
+    ax.text(0.98, float(np.mean(scores))/1.28 + 0.02,
+            f"Mean = {np.mean(scores):.3f}",
+            transform=ax.transAxes, ha="right", va="bottom",
+            color=C_NAVY, fontsize=9, fontweight="bold",
             bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
-                      edgecolor="#BBBBBB", linewidth=0.7, alpha=1.0),
-        )
+                      edgecolor=C_NAVY, linewidth=0.8, alpha=1.0))
 
     ax.set_xticks(x)
     ax.set_xticklabels([f"#{i}\n{l}" for i, l in zip(ids, labels)],
-                       fontsize=9, rotation=15, ha="right")
-    ax.set_ylabel("Aggregated GREEN Score (0–1)")
-    ax.set_xlabel("Report ID (Label)")
+                       fontsize=8.5, rotation=20, ha="right")
+    ax.set_ylabel("Aggregated GREEN Score (0 – 1)")
+    ax.set_xlabel("Report ID  (label abbreviation)")
     ax.set_title("Figure 1 — Aggregated GREEN Scores per Report\n"
-                 "(mean of 3 LLM judges: Mistral-7B, Qwen2.5-3B, Gemma2-9B)",
-                 pad=14)
-    ax.axhline(np.mean(scores), color=C_NAVY, ls="--", lw=1.8)
-    ax.text(len(ids) - 0.5, np.mean(scores) + 0.02,
-            f"Mean={np.mean(scores):.3f}", color=C_NAVY,
-            fontsize=9, fontweight="bold", ha="right")
+                 "(mean of 3 judges: Mistral-7B | Qwen2.5-3B | Gemma2-9B)", pad=12)
+    ax.legend(handles=[
+        mpatches.Patch(color=C_FOREST,  label="HIGH  (>= 0.70)"),
+        mpatches.Patch(color=C_AMBER,   label="MED   (0.40 – 0.70)"),
+        mpatches.Patch(color=C_CRIMSON, label="LOW   (< 0.40)"),
+    ], loc="upper left", framealpha=1.0, edgecolor="#CCCCCC", fancybox=False)
+    _hgrid(ax)
 
-    legend_handles = [
-        mpatches.Patch(color=C_FOREST,  label="HIGH  (>=0.70)"),
-        mpatches.Patch(color=C_AMBER,   label="MED   (0.40–0.70)"),
-        mpatches.Patch(color=C_CRIMSON, label="LOW   (<0.40)"),
-    ]
-    ax.legend(handles=legend_handles, loc="upper left",
-              framealpha=0.95, edgecolor="#CCCCCC", fancybox=False)
-
-    plt.tight_layout()
     save_fig(fig, "fig1_aggregated_green_scores")
     plt.show()
 
 
 def plot_judge_heatmap(results: list[dict]) -> None:
-    """Heatmap: rows=reports, cols=judges, values=GREEN scores."""
+    """Heatmap: rows = reports, cols = judges, cell = GREEN score."""
     judge_names = [j["name"] for j in JUDGES]
-    report_ids  = [r["id"] for r in results]
+    report_ids  = [r["id"]   for r in results]
 
-    # Build matrix
     matrix = np.full((len(results), len(JUDGES)), np.nan)
     for i, r in enumerate(results):
         for js in r.get("judge_scores", []):
-            j_idx = next(
-                (k for k, j in enumerate(JUDGES) if j["name"] == js["judge"]),
-                None
-            )
+            j_idx = next((k for k, j in enumerate(JUDGES)
+                          if j["name"] == js["judge"]), None)
             if j_idx is not None and js.get("green_score") is not None:
                 matrix[i, j_idx] = js["green_score"]
 
-    fig, ax = plt.subplots(figsize=(6, max(5, len(results) * 0.55)))
-    mask = np.isnan(matrix)
-
+    fig, ax = plt.subplots(figsize=(7, max(5, len(results) * 0.58)),
+                            constrained_layout=True)
     sns.heatmap(
-        matrix,
-        ax=ax,
-        annot=True, fmt=".3f",
-        cmap="RdYlGn",        # red=bad, yellow=medium, green=good
-        vmin=0, vmax=1,
-        linewidths=0.5, linecolor="#DDDDDD",
-        annot_kws={"size": 9, "weight": "bold", "color": "#111111"},
-        cbar_kws={"label": "GREEN Score", "shrink": 0.8},
-        mask=mask,
+        matrix, ax=ax,
+        annot=True, fmt=".2f", cmap="RdYlGn", vmin=0, vmax=1,
+        linewidths=0.6, linecolor="#EEEEEE",
+        annot_kws={"size": 10, "weight": "bold", "color": "#111111"},
+        cbar_kws={"label": "GREEN Score", "shrink": 0.75, "pad": 0.04},
+        mask=np.isnan(matrix),
     )
-    ax.set_xticklabels(judge_names, fontsize=10, fontweight="bold")
-    ax.set_yticklabels([f"#{i}" for i in report_ids],
-                       fontsize=9, rotation=0)
-    ax.set_xlabel("LLM Judge")
-    ax.set_ylabel("Report ID")
+    ax.set_xticklabels(judge_names, fontsize=10, fontweight="bold", rotation=0)
+    ax.set_yticklabels([f"#{i}" for i in report_ids], fontsize=9, rotation=0)
+    ax.set_xlabel("LLM Judge", labelpad=10)
+    ax.set_ylabel("Report ID", labelpad=10)
     ax.set_title("Figure 2 — Per-Judge GREEN Scores\n"
-                 "(rows=reports, cols=judges)", pad=14)
+                 "(rows = reports | cols = judges)", pad=12)
     fig.patch.set_facecolor("white")
-    plt.tight_layout()
+
     save_fig(fig, "fig2_judge_heatmap")
     plt.show()
 
 
 def plot_judge_agreement(results: list[dict]) -> None:
-    """
-    Judge correlation matrix + scatter plots showing inter-judge agreement.
-    """
+    """3×3 agreement matrix — diagonal = histogram, off-diagonal = scatter."""
     judge_names = [j["name"] for j in JUDGES]
     scores_by_judge = {name: [] for name in judge_names}
-    ids_common = []
 
     for r in results:
-        row = {}
-        for js in r.get("judge_scores", []):
-            if js.get("green_score") is not None:
-                row[js["judge"]] = js["green_score"]
+        row = {js["judge"]: js["green_score"]
+               for js in r.get("judge_scores", [])
+               if js.get("green_score") is not None}
         if len(row) == len(JUDGES):
             for name in judge_names:
                 scores_by_judge[name].append(row[name])
-            ids_common.append(r["id"])
 
-    if not ids_common:
-        logger.warning("Not enough complete judge data for agreement plot.")
+    if not scores_by_judge[judge_names[0]]:
+        logger.warning("Not enough data for agreement plot.")
         return
 
-    n = len(judge_names)
-    fig, axes = plt.subplots(n, n, figsize=(10, 10))
-    fig.suptitle("Figure 3 — Inter-Judge Agreement Matrix\n"
-                 "(diagonal=score distribution, off-diagonal=pairwise scatter)",
-                 fontsize=13, fontweight="bold", y=1.01)
+    n   = len(judge_names)
+    fig, axes = plt.subplots(n, n, figsize=(11, 10),
+                              gridspec_kw={"wspace": 0.38, "hspace": 0.38})
+    fig.suptitle("Figure 3 — Inter-Judge Agreement Matrix",
+                 fontsize=13, fontweight="bold", y=0.98)
 
     for i, name_i in enumerate(judge_names):
         for j, name_j in enumerate(judge_names):
             ax = axes[i, j]
             xi = np.array(scores_by_judge[name_i])
             xj = np.array(scores_by_judge[name_j])
+            color = list(JUDGE_COLORS.values())[i]
 
             if i == j:
-                # Diagonal: score distribution
-                ax.hist(xi, bins=8, color=list(JUDGE_COLORS.values())[i],
+                ax.hist(xi, bins=min(8, len(xi)), color=color,
                         edgecolor="white", linewidth=0.8, alpha=0.9)
-                ax.set_xlabel("Score")
-                ax.set_ylabel("Count")
                 ax.set_title(name_i, fontsize=10, fontweight="bold",
-                             color=list(JUDGE_COLORS.values())[i])
+                             color=color, pad=6)
+                ax.set_xlabel("Score", fontsize=8)
+                ax.set_ylabel("Count", fontsize=8)
             else:
-                # Off-diagonal: scatter
-                ax.scatter(xj, xi,
-                           color=list(JUDGE_COLORS.values())[i],
-                           edgecolors="#333333", linewidths=0.5,
-                           s=60, alpha=0.85, zorder=3)
-                # Perfect agreement line
-                ax.plot([0, 1], [0, 1], "--", color="#AAAAAA", lw=1.2)
-                corr = np.corrcoef(xi, xj)[0, 1] if len(xi) > 1 else 0
-                ax.text(0.05, 0.92, f"r={corr:.3f}",
-                        transform=ax.transAxes, fontsize=9,
+                ax.scatter(xj, xi, color=color, edgecolors="#333333",
+                           linewidths=0.4, s=45, alpha=0.8, zorder=3)
+                ax.plot([0, 1], [0, 1], "--", color="#AAAAAA", lw=1.0)
+                corr = float(np.corrcoef(xi, xj)[0, 1]) if len(xi) > 1 else 0.0
+                # Correlation label — always top-left corner in axes space
+                ax.text(0.05, 0.88, f"r = {corr:.2f}",
+                        transform=ax.transAxes, fontsize=8.5,
                         fontweight="bold", color="#111111",
-                        bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
-                                  edgecolor="#BBBBBB", alpha=1.0))
-                ax.set_xlim(-0.05, 1.05)
-                ax.set_ylim(-0.05, 1.05)
-                if i == n - 1:
-                    ax.set_xlabel(name_j, fontsize=9)
-                if j == 0:
-                    ax.set_ylabel(name_i, fontsize=9)
+                        bbox=dict(boxstyle="round,pad=0.25", facecolor="white",
+                                  edgecolor="#CCCCCC", linewidth=0.7, alpha=1.0))
+                ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.05, 1.05)
+            if i == n - 1: ax.set_xlabel(name_j, fontsize=9)
+            if j == 0:     ax.set_ylabel(name_i, fontsize=9)
 
-    plt.tight_layout()
+    fig.patch.set_facecolor("white")
     save_fig(fig, "fig3_judge_agreement")
     plt.show()
 
 
 def plot_error_breakdown(results: list[dict]) -> None:
-    """
-    Stacked bar chart showing error category breakdown per report.
-    """
+    """Stacked bars: Matched Findings | CIE | CSE per report."""
     report_ids, cse_vals, cie_vals, mf_vals = [], [], [], []
-
     for r in results:
-        valid = [
-            js for js in r.get("judge_scores", [])
-            if js.get("status") == "ok"
-        ]
+        valid = [js for js in r.get("judge_scores", []) if js.get("status") == "ok"]
         if not valid:
             continue
         report_ids.append(r["id"])
-        cse_vals.append(np.mean([js.get("clinically_significant_errors", 0) for js in valid]))
-        cie_vals.append(np.mean([js.get("clinically_insignificant_errors", 0) for js in valid]))
-        mf_vals.append(np.mean([js.get("matched_findings", 0) for js in valid]))
+        cse_vals.append(float(np.mean([js.get("clinically_significant_errors",   0) for js in valid])))
+        cie_vals.append(float(np.mean([js.get("clinically_insignificant_errors", 0) for js in valid])))
+        mf_vals.append(float(np.mean([js.get("matched_findings",                 0) for js in valid])))
 
     if not report_ids:
-        logger.warning("No error breakdown data available.")
+        logger.warning("No error data to plot.")
         return
 
-    x   = np.arange(len(report_ids))
-    w   = 0.55
-
-    fig, ax = plt.subplots(figsize=(max(10, len(report_ids) * 0.8), 5.5))
-    p1 = ax.bar(x, mf_vals,  width=w, label="Matched Findings",
-                color=C_FOREST,  edgecolor="#0A2614", linewidth=0.8)
-    p2 = ax.bar(x, cie_vals, width=w, label="Clinically Insignificant Errors",
-                color=C_AMBER,   edgecolor="#3D2000", linewidth=0.8,
-                bottom=mf_vals)
-    p3 = ax.bar(x, cse_vals, width=w, label="Clinically Significant Errors (CSE)",
-                color=C_CRIMSON, edgecolor="#5C0A0A", linewidth=0.8,
-                bottom=[m + c for m, c in zip(mf_vals, cie_vals)])
+    x = np.arange(len(report_ids))
+    w = 0.6
+    fig, ax = plt.subplots(figsize=(max(10, len(report_ids) * 0.9), 6),
+                            constrained_layout=True)
+    ax.bar(x, mf_vals,  width=w, label="Matched Findings",
+           color=C_FOREST,  edgecolor="#0A2614", linewidth=0.8)
+    ax.bar(x, cie_vals, width=w, label="Clinically Insignificant Errors",
+           color=C_AMBER,   edgecolor="#3D2000", linewidth=0.8, bottom=mf_vals)
+    ax.bar(x, cse_vals, width=w, label="Clinically Significant Errors (CSE)",
+           color=C_CRIMSON, edgecolor="#5C0A0A", linewidth=0.8,
+           bottom=[m + c for m, c in zip(mf_vals, cie_vals)])
 
     ax.set_xticks(x)
     ax.set_xticklabels([f"#{i}" for i in report_ids], fontsize=10)
     ax.set_ylabel("Average Count (across 3 judges)")
     ax.set_xlabel("Report ID")
     ax.set_title("Figure 4 — Error Category Breakdown per Report\n"
-                 "(averaged across Mistral-7B, Qwen2.5-3B, Gemma2-9B)", pad=14)
-    ax.legend(loc="upper right", framealpha=0.95,
+                 "(averaged across Mistral-7B | Qwen2.5-3B | Gemma2-9B)", pad=12)
+    ax.legend(loc="upper right", framealpha=1.0,
               edgecolor="#CCCCCC", fancybox=False)
+    _hgrid(ax)
 
-    plt.tight_layout()
     save_fig(fig, "fig4_error_breakdown")
     plt.show()
 
 
 def plot_summary_radar(stats: dict) -> None:
-    """
-    Radar chart comparing per-judge mean GREEN scores + spread.
-    """
-    judge_names = list(stats["per_judge"].keys())
-    means = [stats["per_judge"][n]["mean"] for n in judge_names]
-    stds  = [stats["per_judge"][n]["std"]  for n in judge_names]
-
-    # Add overall system score as extra "spoke"
+    """Radar chart — one spoke per judge + aggregated system score."""
+    judge_names    = list(stats["per_judge"].keys())
+    means          = [stats["per_judge"][n]["mean"] for n in judge_names]
     judge_names_ext = judge_names + ["Aggregated\n(System)"]
     means_ext       = means       + [stats["mean_green"]]
 
-    n     = len(judge_names_ext)
-    theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    npts        = len(judge_names_ext)
+    theta       = np.linspace(0, 2 * np.pi, npts, endpoint=False)
+    means_plot  = means_ext + [means_ext[0]]
+    theta_plot  = np.concatenate([theta, [theta[0]]])
 
-    # Close the polygon
-    means_plot = means_ext + [means_ext[0]]
-    theta_plot = np.concatenate([theta, [theta[0]]])
+    fig, ax = plt.subplots(figsize=(7, 7), subplot_kw=dict(polar=True),
+                            constrained_layout=True)
+    ax.plot(theta_plot, means_plot, "o-", color=C_NAVY, lw=2.5, markersize=9)
+    ax.fill(theta_plot, means_plot, alpha=0.18, color=C_NAVY)
 
-    fig, ax = plt.subplots(figsize=(7, 7),
-                           subplot_kw=dict(polar=True))
-    ax.plot(theta_plot, means_plot, "o-",
-            color=C_NAVY, linewidth=2.5, markersize=8)
-    ax.fill(theta_plot, means_plot, alpha=0.2, color=C_NAVY)
-
-    # Reference rings
-    for ring in [0.25, 0.5, 0.75, 1.0]:
-        ax.plot(theta_plot,
-                [ring] * (n + 1), "--",
-                color="#CCCCCC", linewidth=0.7, zorder=0)
-        ax.text(0, ring + 0.03, f"{ring:.2f}",
-                ha="center", va="bottom", fontsize=8, color="#888888")
+    for ring in (0.25, 0.5, 0.75, 1.0):
+        ax.plot(theta_plot, [ring] * (npts + 1), "--",
+                color="#CCCCCC", lw=0.7, zorder=0)
+        # Ring labels placed at a fixed angular position — no overlap possible
+        ax.text(np.pi / 8, ring + 0.03, f"{ring:.2f}",
+                ha="center", va="bottom", fontsize=7.5, color="#888888")
 
     ax.set_xticks(theta)
-    ax.set_xticklabels(judge_names_ext, fontsize=11, fontweight="bold")
-    ax.set_ylim(0, 1.1)
+    # Pad spoke labels outward so they clear the polygon
+    ax.set_xticklabels(judge_names_ext, fontsize=10, fontweight="bold")
+    ax.tick_params(axis="x", pad=16)
+    ax.set_ylim(0, 1.20)
     ax.set_yticks([])
     ax.set_title("Figure 5 — Per-Judge GREEN Score Comparison\n"
-                 "(outer = better, inner = worse)",
-                 fontsize=13, fontweight="bold", pad=20)
-    fig.patch.set_facecolor("white")
-    ax.set_facecolor("white")
+                 "(outer ring = 1.0 = best)",
+                 fontsize=13, fontweight="bold", pad=28)
 
-    # Score annotations
+    # Score labels pushed 0.15 units beyond data point — clear of polygon
     for t, m in zip(theta, means_ext):
-        ax.text(t, m + 0.08, f"{m:.3f}",
+        ax.text(t, m + 0.14, f"{m:.3f}",
                 ha="center", va="center", fontsize=10,
                 fontweight="bold", color=C_NAVY,
                 bbox=dict(boxstyle="round,pad=0.25", facecolor="white",
-                          edgecolor=C_NAVY, linewidth=0.8, alpha=1.0))
+                          edgecolor=C_NAVY, linewidth=0.9, alpha=1.0))
 
-    plt.tight_layout()
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#FAFAFA")
+
     save_fig(fig, "fig5_radar_judge_comparison")
     plt.show()
 
 
 def run_all_visualizations(results: list[dict], stats: dict) -> None:
-    """Run all 5 visualizations."""
     logger.info("\n[Step 4] Generating visualizations...")
     plot_aggregated_scores(results)
     plot_judge_heatmap(results)

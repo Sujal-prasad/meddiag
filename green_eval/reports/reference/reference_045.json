@@ -1,8 +1,8 @@
 {
   "id": "045",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Significant interval worsening, consider worsening pneumonia, aspiration or edema."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Significant interval worsening of bilateral perihilar, lower lung opacities, with bronchovascular distribution, consider worsening pneumonia, aspiration or edema. Elevated right hemidiaphragm stable. Borderline heart size. Thoracolumbar curve.\nIMPRESSION: Significant interval worsening, consider worsening pneumonia, aspiration or edema."
 }

@@ -1,9 +1,9 @@
 {
   "id": "047",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Slight prominence of the hila suggest pulmonary vascular engorgement without overt pulmonary edema. Basilar atelectasis without definite focal consolidation."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n* No pleural effusion, pneumothorax, or focal consolidation: These findings indicate that there is no accumulation of fluid or air in the pleural space or lung parenchyma.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors mentioned in the clinical evidence.\n\nStep 2: Aortic knob calcifications are also present, but their significance cannot be determined without further information about their size, location, and relationship to the heart.\n\nStep 3: Normal",
-  "latency_s": 103.07
+  "report": "=== VISUAL_FINDINGS ===\nMild bibasilar atelectasis is observed.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature: \n- Findings: Mild bibasilar atelectasis is noted without definite focal consolidation. No large pleural effusion or evidence of pneumothorax is seen. The cardiac silhouette is top-normal to mildly enlarged. Mediastinal contours are unremarkable. Slight prominence of the hila suggests pulmonary vascular engorgement without overt pulmonary edema.\n- Impression: Slight prominence of the hila suggests pulmonary vascular engorgement without overt pulmonary edema. Basilar atelectasis without definite focal consolidation.\n\n=== DEDUCTIVE_reasonING ===\nStep 1: Mild bibasilar atelectasis is directly supported by the retrieved literature's mention of it as a finding.\n\nStep 2: The absence of large pleural effusion or evidence of pneumothorax further supports the presence of mild bibasilar atelectasis rather than other conditions like pleurisy or pneumothorax.\n\nStep 3: The slight prominence of the hila also aligns with the literature's description of pulmonary vascular engorgement, which can be associated with various causes including cardiovascular issues.\n\nStep ",
+  "latency_s": 85.26
 }

@@ -1,8 +1,8 @@
 {
   "id": "041",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "No acute cardiopulmonary process."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: The lungs are clear without focal consolidation. No pleural effusion or pneumothorax is seen. The cardiac and mediastinal silhouettes are unremarkable. Aortic knob calcification is seen.\nIMPRESSION: No acute cardiopulmonary process."
 }

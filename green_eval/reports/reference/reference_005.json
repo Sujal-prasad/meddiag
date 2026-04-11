@@ -1,8 +1,8 @@
 {
   "id": "005",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "An enteric tube courses below the level of the diaphragm."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: The right costophrenic angle is not imaged. Otherwise, the lungs are clear. The heart size is upper limits of normal. Enteric tube courses below the level of the diaphragm. There is no pneumothorax.\nIMPRESSION: An enteric tube courses below the level of the diaphragm."
 }

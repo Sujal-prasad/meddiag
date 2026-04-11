@@ -1,8 +1,8 @@
 {
   "id": "010",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "New moderate left pleural effusion with adjacent atelectasis in the left lung base."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: A moderate left pleural effusion is new since . Associated left basilar opacity likely reflect compressive atelectasis. There is no pneumothorax. There are no new abnormal cardiac or mediastinal contour. Median sternotomy wires and mediastinal clips are in expected positions.\nIMPRESSION: New moderate left pleural effusion with adjacent atelectasis in the left lung base."
 }

@@ -1,8 +1,8 @@
 {
   "id": "031",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Subtle new confluent opacity in the right perihilar region,? related to subtle progression of CHF findings. Otherwise, I doubt significant interval change. Attention to this area on followup films is requested."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Compared to the prior study, the right IJ line may have been exchanged. The tip overlies the proximal SVC. The ET tube, left IJ line and NG type tube appear unchanged. No pneumothorax is detected. There is some new subtle confluent opacity in the right perihilar region. Otherwise, I doubt significant interval change. Prominent cardiomediastinal silhouette is unchanged. Upper zone redistribution and diffuse vascular blurring is similar to the prior film, allowing for technique. Increased retrocardiac density with air bronchograms is also unchanged. No gross effusion.\nIMPRESSION: Subtle new confluent opacity in the right perihilar region,? related to subtle progression of CHF findings. Otherwise, I doubt significant interval change. Attention to this area on followup films is requested."
 }

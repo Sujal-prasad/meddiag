@@ -1,8 +1,8 @@
 {
   "id": "038",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Appropriately placed NG tube."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: The lung apices are not depicted. NG tube ends in the gastric antrum in appropriate position. The lungs are clear, the cardiomediastinal silhouette and hila are normal. There is no pleural effusion and no pneumothorax. Partially visualized abdomen shows normal bowel gas pattern.\nIMPRESSION: Appropriately placed NG tube."
 }

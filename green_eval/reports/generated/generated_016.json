@@ -1,9 +1,9 @@
 {
   "id": "016",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Bilateral pleural effusion, right greater than left. Underlying consolidation cannot be completely excluded. Recommend repositioning. NG tube terminates in stomach with sidehole in distal esophagus. Right PICC terminates in the axilla."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiac hypertrophy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: \nThe presence of mild cardiomegaly and aortic knob calcifications does not necessarily indicate an acute cardiopulmonary process.\n\nStep 2: \nThere is no indication of pleural effusion, pneumothorax, or focal consolidation, which would suggest alternative diagnoses like pneumonia, pulmonary edema, or pleurisy.\n\nStep 3: \nNormal mediastinal contours further support the absence of mass lesions or fluid collections within the thoracic cavity.\n\nStep 4: \nConsidering",
-  "latency_s": 101.1
+  "report": "=== VISUAL_FINDINGS ===\nThe frontal supine view of the chest shows:\n\n* Normal-sized heart with normal cardiomediastinal contours\n* Increased opacity in the right hemithorax, consistent with a moderate-to-large size pleural effusion\n* Small pleural effusion in the left hemithorax\n* Right PICC line terminating in the axilla\n* Dobbhoff feeding tube and gastric tube terminating below the diaphragm\n* Sidehole of the gastric tube positioned in the distal esophagus\n* Extensive retrocardiac opacity in the left lower lobe, possibly indicating partial collapse of the left lower lobe\n* Potential small pneumothorax on the right\n* Bilateral blunting of the costophrenic angles\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature supports the presence of pleural effusions and possible pulmonary complications.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: \nIncreased opacity in the right hemithorax is consistent with a moderate-to-large size pleural effusion, supported by the retrieval of literature.\n\nStep 2: \nSmall pleural effusion in the left hemithorax is also observed, although it's noted that pleural eff",
+  "latency_s": 83.1
 }

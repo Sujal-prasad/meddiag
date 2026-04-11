@@ -1,9 +1,9 @@
 {
   "id": "020",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Dobhoff tube terminates within the stomach."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiac hypertrophy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: \nThe presence of mild cardiomegaly and aortic knob calcifications could suggest cardiovascular pathology, but these findings alone do not indicate an acute process.\n\nStep 2: \nThere is no indication of pleural effusion, pneumothorax, or focal consolidation, which would typically require further investigation.\n\nStep 3: \nGiven the absence of abnormalities beyond cardiomegaly and calcifications, it's reasonable to conclude that these findings are likely benign or non-specific.\n\n=== FINAL_DIAGN",
-  "latency_s": 86.72
+  "report": "=== VISUAL_FINDINGS ===\nA single portable view of the lower chest and upper abdomen shows an enteric tube with its tip in the upper stomach. \n\nA relatively distended loop of small bowel is visible in the mid-abdomen. \nExcreted contrast is seen within the renal pelvises bilaterally.\n\nLateral aspect of the left lower hemi-thorax is excluded from the examination, but the other pleural surfaces appear normal. \nThe lungs are clear. \nBorderline cardiomegaly remains unchanged. \nIncidental note of large lymph node calcifications in the mediastinum and right hilus.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature states that an enteric tube placed in the upper stomach can be confirmed by visualization of the tube's tip at the gastro-esophageal junction or beyond.\n\n=== DEDUCTIVE_reasoning ===\nStep 1: The presence of the enteric tube with its tip in the upper stomach correlates with the clinical evidence that it was placed in this location.\n\nStep 2: The visibility of the distended loop of small bowel supports the placement of the enteric tube, as it would likely cause obstruction if not properly positioned.\n\nStep 3: The exclusion of the lateral",
+  "latency_s": 81.87
 }

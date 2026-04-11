@@ -1,9 +1,9 @@
 {
   "id": "025",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Mild to large bilateral, right greater than left pleural effusions. Degree of pulmonary edema may have slightly improved since prior exam although detailed evaluation is limited."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by a mass or fluid collection.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: \nThe presence of mild cardiomegaly and aortic knob calcifications does not necessarily indicate an acute cardiopulmonary process.\n\nStep 2: \nThere is no indication of pleural effusion, pneumothorax, or focal consolidation, which would suggest alternative diagnoses such as pneumonia, pulmonary edema, or pleurisy.\n\nStep 3: \nNormal mediastinal contours further support the absence of an acute thoracic abnormality.\n\n=== FINAL_DIAGNOSIS ===\n\n<",
-  "latency_s": 87.47
+  "report": "=== VISUAL_FINDINGS ===\nModerate to large bilateral pleural effusions are seen, with the right greater than left. Small bilateral pleural effusions are now present. Low lung volumes are observed. A right upper lobe opacity has improved. No pneumothorax is visible. The heart's cardiac silhouette remains stable. The right IJ line terminates in the right atrium.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature states: \n- Moderate to large bilateral pleural effusions are again seen, likely right greater than left. \n- Suspected superimposed pulmonary edema may have slightly improved since prior examination.\n- Vasculature appears less engorged.\n- Cardiac silhouette cannot be assessed.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: The presence of moderate to large bilateral pleural effusions initially suggests pulmonary congestion or edema. However, the current findings show improvement in these effusions, which could indicate resolution or reduction of the underlying cause.\n\nStep 2: The improvement in the extent of pulmonary edema and the decrease in pleural effusions support the notion of reduced pulmonary congestion.\n\nStep 3: The stability of the cardiac silhouette and lack of new abnormalities suggest that there is no acute change in",
+  "latency_s": 99.78
 }

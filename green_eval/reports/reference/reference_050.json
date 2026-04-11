@@ -1,8 +1,8 @@
 {
   "id": "050",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Interval development of right lower lobe consolidation concerning for pneumonia. Persistent though decreased opacity in the left lung base may represent residual pneumonia/aspiration."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: A tracheostomy tube is seen projecting over the superior mediastinum. Interval development of right lower lobe opacities concerning for pneumonia. Residual opacity in the left lung base is slightly decreased from prior though may represent persistent pneumonia or aspiration. No large effusion is seen. Cardiomediastinal silhouette is stable. Right IJ central venous catheter is been removed.\nIMPRESSION: Interval development of right lower lobe consolidation concerning for pneumonia. Persistent though decreased opacity in the left lung base may represent residual pneumonia/aspiration."
 }

@@ -1,9 +1,9 @@
 {
   "id": "013",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Compared to the most recent study, there is improvement in the mild pulmonary edema and decrease in the small left pleural effusion. Moderate right pleural effusion and bibasilar atelectasis are stable."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n\n=== DEDUCTIVE_reasonING ===\n\n**Step 1:** Mild cardiomegaly is observed, which could be related to various factors mentioned in the clinical evidence.\n\n**Step 2:** Aortic knob calcifications are present, but their significance cannot be determined without further information about their size, location, and relationship to surrounding structures.\n\n**Step 3:** Normal mediastinal contours indicate that there is no apparent mass effect or fluid accumulation within the mediastinum.\n\n**Step 4:** No pleural effusion, pneumothorax, or",
-  "latency_s": 95.91
+  "report": "=== VISUAL_FINDINGS ===\nA right-sided PICC line ends in the upper to mid superior vena cava. \nAn upper endotracheal tube (OG tube) terminates within the stomach. \nRight pleural effusion > left pleural effusion. \nBibasilar hazy opacities consistent with bilateral pleural effusions. \nBilateral lower lobe atelectasis. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: FINDINGS:... (multiple studies)\n\n=== DEDUCTIVE_REASONING ===\n\nStep 1: The presence of a right-sided PICC line ending in the upper to mid superior vena cava suggests central venous access.\n\nStep 2: The termination of the OG tube within the stomach indicates its correct placement.\n\nStep 3: The larger right pleural effusion compared to the left pleural effusion may indicate respiratory compromise or possible lung injury.\n\nStep 4: The bilateral lower lobe atelectasis could be related to mechanical ventilation or other factors affecting lung expansion.\n\nStep 5: The bibasilar hazy opacities are consistent with both pleural effusions and atelectasis.\n\nStep 6: The lack of pneumothorax rules out tension",
+  "latency_s": 90.22
 }

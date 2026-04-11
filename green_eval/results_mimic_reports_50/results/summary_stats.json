@@ -1,0 +1,22 @@
+{
+  "n_reports": 50,
+  "mean_green": 0.6871,
+  "std_green": 0.1431,
+  "median_green": 0.6761,
+  "min_green": 0.345,
+  "max_green": 0.9338,
+  "per_judge": {
+    "Mistral-7B": {
+      "mean": 0.7845,
+      "std": 0.152
+    },
+    "Qwen2.5-3B": {
+      "mean": 0.6272,
+      "std": 0.153
+    },
+    "Gemma2-9B": {
+      "mean": 0.6495,
+      "std": 0.2628
+    }
+  }
+}

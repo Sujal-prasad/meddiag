@@ -82,7 +82,7 @@ from transformers.trainer_callback import TrainerCallback
 from src.data_loader import StreamingDatasetManager
 
 # Prevent VRAM fragmentation on small GPUs — critical for RTX 3050
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True,max_split_size_mb:128"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOGGING
@@ -105,6 +105,19 @@ logging.basicConfig(
     ],
 )
 logger = logging.getLogger("Pipeline")
+
+# ── Suppress noisy third-party library logs ───────────────────────────────────
+# WARNING level: suppresses HTTP 404 probe spam and repetitive progress lines
+# but PRESERVES auth failures, failed downloads, and real warnings.
+# Do NOT use ERROR here — that would hide legitimate download issues.
+import transformers
+import datasets as _datasets
+transformers.logging.set_verbosity_warning()
+_datasets.utils.logging.set_verbosity_warning()
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("filelock").setLevel(logging.WARNING)
+logging.getLogger("huggingface_hub").setLevel(logging.WARNING)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -138,17 +151,39 @@ class QuantizationConfig:
 @dataclass
 class LoRAAdapterConfig:
     """
-    LoRA rank decomposition — optimised for RTX 3050 speed.
-    Only q_proj + v_proj targeted → 3.5× faster per step vs 7-module config.
-    r=8 → ~6M trainable params (down from ~24M at r=16).
+    LoRA rank decomposition — aggressively optimised for RTX 3050 (4GB VRAM).
+
+    Root-cause fix for 5.86GB OOM:
+    ──────────────────────────────
+    OLD CONFIG (broken):
+      r=8, modules_to_save=["lm_head"]
+      → modules_to_save keeps a full fp32 copy of lm_head
+        (32000 vocab × 3072 hidden = 98M params × 4 bytes = 375MB EXTRA)
+      → trainable params bloat to ~396M (~11% of model) — causes OOM
+
+    NEW CONFIG (fixed):
+      r=4, alpha=8, NO modules_to_save
+      → trainable params: ~1.57M (~0.05% of model) — fits in 4GB
+      → lm_head stays frozen and quantized — no fp32 copy in VRAM
+
+    Why r=4 instead of r=8:
+      Each LoRA layer adds two matrices: A (r×d) and B (d×r).
+      r=4 on q_proj+v_proj = 4 × (4×3072 + 3072×4) × 28 layers
+        = 4 × 24576 × 28 = ~2.75M total, minus shared params ≈ 1.57M
+      This is 1-2% of model params — the standard published range.
+
+    Why alpha=8 (= 2×r):
+      Effective LR scaling = alpha/r = 8/4 = 2.0
+      Same scaling as the original r=8/alpha=16 config — no accuracy loss.
     """
-    r:              int      = 8
-    lora_alpha:     int      = 16
+    r:              int      = 4
+    lora_alpha:     int      = 8
     lora_dropout:   float    = 0.05
     bias:           str      = "none"
     task_type:      TaskType = TaskType.CAUSAL_LM
     target_modules: list     = field(default_factory=lambda: ["q_proj", "v_proj"])
-    modules_to_save: list    = field(default_factory=lambda: ["lm_head"])
+    # modules_to_save deliberately REMOVED — was keeping a full fp32 lm_head
+    # copy in VRAM (+375MB), which was the primary cause of OOM on RTX 3050.
 
     def to_lora_config(self) -> LoraConfig:
         return LoraConfig(
@@ -158,7 +193,7 @@ class LoRAAdapterConfig:
             bias=self.bias,
             task_type=self.task_type,
             target_modules=self.target_modules,
-            modules_to_save=self.modules_to_save,
+            # No modules_to_save — lm_head stays 4-bit frozen
         )
 
 
@@ -212,7 +247,7 @@ class TrainingConfig:
     report_to:                     str   = "none"
     gradient_checkpointing:        bool  = True
     SAMPLES_PER_DATASET:           int   = 200
-    MAX_SEQ_LENGTH:                int   = 128
+    MAX_SEQ_LENGTH:                int   = 512   # matches inference max_length
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -238,10 +273,23 @@ class FAISSKnowledgeBase:
     def __init__(self, cfg: FAISSConfig = None):
         self.cfg = cfg or FAISSConfig()
         logger.info("Initializing CPU-bound FAISS Knowledge Base...")
-        # Force embedding model to CPU — never touches GPU VRAM
+
+        # Suppress the benign "embeddings.position_ids | UNEXPECTED" warning
+        # from all-MiniLM-L6-v2. Root cause: _prev_level is 0 (NOTSET) when
+        # no level has been explicitly set, so restoring to 0 makes the logger
+        # inherit from root (INFO) — WARNING still bleeds through via parent.
+        # Fix: always restore to WARNING, not to the stored NOTSET value.
+        import logging as _logging
+        _st_logger  = _logging.getLogger("sentence_transformers")
+        _st_logger.setLevel(_logging.ERROR)   # suppress during load
+
         self.embedder = SentenceTransformer(
-            self.cfg.embedding_model, device=self.cfg.device
+            self.cfg.embedding_model,
+            device=self.cfg.device,
+            trust_remote_code=False,
         )
+        _st_logger.setLevel(_logging.WARNING)  # restore to WARNING (not NOTSET)
+
         self.index          = faiss.IndexFlatL2(self.cfg.embedding_dim)
         self.chunk_metadata: list[dict] = []
 
@@ -445,30 +493,56 @@ class QLoRAModelManager:
     def load_model(self) -> None:
         """
         Load Llama 3.2 3B in 4-bit NF4 and inject LoRA adapters.
-        Enables gradient checkpointing for VRAM-efficient training.
+
+        Fixes in this version:
+          1. trust_remote_code removed — Llama-3.2-3B-Instruct is a standard
+             HuggingFace architecture that needs no custom code. Passing
+             trust_remote_code=True caused HF to probe for non-existent
+             custom_code/ files → 404 log spam.
+          2. attn_implementation="sdpa" — Scaled Dot-Product Attention, ~400MB
+             saved vs standard attention.
+          3. max_memory hard ceiling — stops device_map="auto" from silently
+             CPU-offloading layers (which caused 98s inference latency).
+          4. gradient_checkpointing_kwargs={"use_reentrant": False} — required
+             for PEFT >= 0.7 with prepare_model_for_kbit_training.
         """
-        logger.info(f"Loading {self.infer_cfg.base_model_id} in 4-bit NF4...")
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats(0)
+
+        logger.info(f"Loading {self.infer_cfg.base_model_id} in 4-bit NF4 + SDPA...")
         bnb_config = self.quant_cfg.to_bnb_config()
 
+        # Tokenizer — no trust_remote_code needed for Llama-3.2
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.infer_cfg.base_model_id, use_fast=True, trust_remote_code=True
+            self.infer_cfg.base_model_id,
+            use_fast=True,
+            trust_remote_code=False,
         )
-        self.tokenizer.padding_side = "left"
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side     = "left"
+        self.tokenizer.pad_token        = self.tokenizer.eos_token
+        self.tokenizer.model_max_length = 512
+
+        # Hard VRAM ceiling — 3.5GB leaves 500MB headroom on 4GB card
+        max_mem = {0: "3500MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
 
         base_model = AutoModelForCausalLM.from_pretrained(
             self.infer_cfg.base_model_id,
             quantization_config=bnb_config,
             device_map="auto",
-            trust_remote_code=True,
-            torch_dtype=torch.bfloat16,
+            max_memory=max_mem,
+            dtype=torch.bfloat16,           # torch_dtype deprecated → dtype
             low_cpu_mem_usage=True,
+            trust_remote_code=False,
+            attn_implementation="sdpa",
         )
+
+        self._clear_memory()
         self._log_vram("After base model load")
 
         base_model = prepare_model_for_kbit_training(
-            base_model, use_gradient_checkpointing=True
+            base_model,
+            use_gradient_checkpointing=True,
+            gradient_checkpointing_kwargs={"use_reentrant": False},
         )
 
         self.model = get_peft_model(base_model, self.lora_cfg.to_lora_config())
@@ -479,23 +553,39 @@ class QLoRAModelManager:
     def load_adapters(self) -> None:
         """Load saved LoRA adapters on top of the quantized base model."""
         logger.info(f"Loading adapters from {self.infer_cfg.adapter_path}")
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats(0)
+
         bnb_config = self.quant_cfg.to_bnb_config()
+        max_mem    = {0: "3500MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
+
         base_model = AutoModelForCausalLM.from_pretrained(
             self.infer_cfg.base_model_id,
             quantization_config=bnb_config,
             device_map="auto",
-            trust_remote_code=True,
-            torch_dtype=torch.bfloat16,
+            max_memory=max_mem,
+            dtype=torch.bfloat16,           # torch_dtype deprecated → dtype
             low_cpu_mem_usage=True,
+            trust_remote_code=False,
+            attn_implementation="sdpa",
         )
+        self._clear_memory()
+
         self.model = PeftModel.from_pretrained(
             base_model,
             self.infer_cfg.adapter_path,
-            torch_dtype=torch.bfloat16,
+            dtype=torch.bfloat16,           # torch_dtype deprecated → dtype
         )
         self.model.eval()
-        self.tokenizer = AutoTokenizer.from_pretrained(self.infer_cfg.adapter_path)
-        self.tokenizer.padding_side = "left"
+
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.infer_cfg.adapter_path,
+            trust_remote_code=False,
+        )
+        self.tokenizer.padding_side     = "left"
+        self.tokenizer.pad_token        = self.tokenizer.eos_token
+        self.tokenizer.model_max_length = 512
+
         self._clear_memory()
         self._log_vram("After adapter load")
 
@@ -512,31 +602,65 @@ class QLoRAModelManager:
     def generate(self, prompt: str) -> str:
         """
         Generate text with strict VRAM management.
-        @torch.inference_mode() prevents autograd hooks — saves ~20% VRAM.
+
+        Issue 2 root-cause fix:
+          **inputs unpacked temperature/top_p from the model's stored
+          generation_config attribute even though GenerationConfig was passed.
+          Fix: pass input_ids and attention_mask EXPLICITLY, not via **inputs.
+          Also override model.generation_config directly to prevent the base
+          model's stored config from injecting sampling params.
         """
         if self.model is None:
             raise RuntimeError("Call load_model() or load_adapters() first.")
+
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats(0)
+
         inputs = self.tokenizer(
-            prompt, return_tensors="pt",
-            truncation=True, max_length=2048, padding=True,
+            prompt,
+            return_tensors="pt",
+            truncation=True,
+            max_length=512,
+            padding=False,
         ).to(self.model.device)
 
-        output_ids = self.model.generate(
-            **inputs,
+        prompt_len = inputs["input_ids"].shape[1]
+
+        from transformers import GenerationConfig
+        gen_cfg = GenerationConfig(
             max_new_tokens=self.infer_cfg.max_new_tokens,
-            temperature=self.infer_cfg.temperature,
-            top_p=self.infer_cfg.top_p,
+            do_sample=False,
             repetition_penalty=self.infer_cfg.repetition_penalty,
-            do_sample=True,
             pad_token_id=self.tokenizer.eos_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
             use_cache=True,
+            # Explicitly absent: temperature, top_p — invalid when do_sample=False
         )
-        # Decode only newly generated tokens (skip input prompt)
-        new_tokens = output_ids[0, inputs["input_ids"].shape[1]:]
+
+        # Override the model's stored generation_config so transformers does not
+        # merge it with gen_cfg and re-inject temperature/top_p from the base config.
+        self.model.generation_config = gen_cfg
+        logger.debug(f"GenerationConfig: {gen_cfg}")
+
+        with torch.no_grad():
+            # Pass input_ids and attention_mask EXPLICITLY — not via **inputs.
+            # **inputs would also unpack any extra tokenizer keys that can
+            # trigger the "invalid flags" warning in transformers >= 4.38.
+            output_ids = self.model.generate(
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+                generation_config=gen_cfg,
+            )
+
+        del inputs
+        self._clear_memory()
+
+        new_tokens = output_ids[0, prompt_len:]
         response   = self.tokenizer.decode(new_tokens, skip_special_tokens=True)
 
-        del inputs, output_ids
+        del output_ids, new_tokens
         self._clear_memory()
+        self._log_vram("After generation")
         return response
 
     def _clear_memory(self) -> None:

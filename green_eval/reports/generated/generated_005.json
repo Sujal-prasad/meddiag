@@ -1,9 +1,9 @@
 {
   "id": "005",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "An enteric tube courses below the level of the diaphragm."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions including hypertension, coronary artery disease, and cardiac hypertrophy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: Suggests absence of significant mediastinal pathology.\n* No pleural effusion, pneumothorax, or focal consolidation: Indicates lack of significant pulmonary abnormalities.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors mentioned in the clinical evidence.\n\nStep 2: Aortic knob calcifications also suggest possible underlying metabolic or degenerative processes.\n\nStep 3: Normal mediastinal contours support the notion of no significant mediastinal pathology.\n\nStep 4: Absence of pleural effusion, pneumothorax, or focal consolidation indicates no acute respiratory issues.\n\nStep 5",
-  "latency_s": 92.85
+  "report": "=== VISUAL_FINDINGS ===\nThe right costophrenic angle is not fully included on the image. Enteric tube courses below the level of the diaphragm. A single frontal view of the chest was obtained. Large bore right-sided central venous catheter is seen terminating in the low SVC/cavoatrial junction. \n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature:\n\n* FINDINGS: \n    * The right costophrenic angle is not imaged. Otherwise, the lungs are clear. The heart size is upper limits of normal. Enteric tube courses below the level of the diaphragm. There is no pneumothorax.\n    * IMPRESSION: An enteric tube courses below the level of the diaphragm.\n    * FINDINGS: An enteric tube tip is within the stomach. Heart size is normal. Mediastinal and hilar contours are within normal limits. Pulmonary vasculature is normal. Lungs are clear, however the left costophrenic angle is excluded from the field of view. No large right-sided pleural effusion or pneumothorax is detected on this supine exam. No acute osseous abnormality is detected.\n    * IMPRESSION: Endotr",
+  "latency_s": 93.26
 }

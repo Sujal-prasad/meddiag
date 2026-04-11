@@ -1,8 +1,8 @@
 {
   "id": "019",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Pneumoperitoneum. Widening of the vascular pedicle may be related to low lung volumes and intravascular volume status."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Single frontal view of the chest was obtained. Free air is present underneath both hemidiaphragms. Lung volumes are low. The vascular pedicle is widened and there is slightly increased rightward shift of the trachea, which may be projectional. Multi focal ill-defined lung opacities are similar to prior and consistent with history of sarcoidosis although superimposed infection cannot be excluded. No pneumothorax or substantial pleural effusion. Chain sutures in the right mid lung are similar to prior.\nIMPRESSION: Pneumoperitoneum. Widening of the vascular pedicle may be related to low lung volumes and intravascular volume status."
 }

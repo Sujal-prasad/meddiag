@@ -1,8 +1,8 @@
 {
   "id": "048",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "No pulmonary edema. No pneumothorax."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Endotracheal tube, feeding tube, and right internal jugular central line are unchanged in position. Overall cardiac and mediastinal contours are likely stable. There is persistent volume loss in the left lower lung and the right lung remains hyperexpanded. Overall, however, there is some improved aeration at the left base.\nIMPRESSION: No pulmonary edema. No pneumothorax."
 }

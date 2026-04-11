@@ -1,9 +1,9 @@
 {
   "id": "035",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Persistent small right pleural effusion with patchy right basilar opacity, potentially atelectasis. Mild pulmonary vascular congestion. No large pneumothorax identified on this supine limited exam."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiac hypertrophy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n* No pleural effusion, pneumothorax, or focal consolidation: These findings indicate that there is no accumulation of fluid or air in the pleural space, which could suggest pneumonia, pulmonary edema, or pneumothorax.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, but it is described as mild. According to the retrieved literature, mild cardiomegaly does not necessarily imply a significant pathology.\n\nStep 2: Aortic knob calcifications are present, but they do not directly",
-  "latency_s": 123.68
+  "report": "=== VISUAL_FINDINGS ===\nTwo enteric tube tips terminate within the stomach. Heart size is borderline enlarged. Mediastinal and hilar contours are similar. Mild upper zone vascular redistribution. Persistent small right pleural effusion with adjacent right basilar opacity. Left lung is grossly clear, however, the left costophrenic angle is excluded from the field of view. No large pneumothorax is seen. No acute osseous abnormalities.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Medical Literature:\n\n* FINDINGS: \n    * Enteric tube is seen with its tip and side port in the stomach.\n    * Lung volumes are low.\n    * The heart size is mildly enlarged.\n    * The aorta is diffusely calcified.\n    * Patchy opacities are noted in both lung bases.\n    * These could reflect areas of atelectasis, but infection is not excluded.\n    * No large pneumothorax or pleural effusion is seen on this supine exam.\n    * There are no acute osseous abnormalities.\nIMPRESSION: Endotracheal and enteric tubes in standard positions. Low lung volumes. \n\n* FINDINGS: \n    * An enteric tube tip is within the stomach",
+  "latency_s": 91.41
 }

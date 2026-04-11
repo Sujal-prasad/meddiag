@@ -1,9 +1,9 @@
 {
   "id": "043",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Right mainstem intubation. , D. by , D."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n\n=== DEDUCTIVE_reasonING ===\n\n**Step 1:** Mild cardiomegaly is observed, which could be related to several factors mentioned in the clinical evidence.\n\n**Step 2:** Aortic knob calcifications are also present, but their significance cannot be determined without further information about their size, location, and relationship to the heart.\n\n**Step 3:** Normal mediastinal contours indicate that there is no immediate indication of mediastinal pathology.\n\n**Step 4:** No pleural effusion, pneumothorax, or focal consolidation are",
-  "latency_s": 106.27
+  "report": "=== VISUAL_FINDINGS ===\nEndotracheal tube terminating in the right mainstem bronchus. Hazy right basilar opacity. Nasogastric tube not visible. Thoracolumbar S-shaped scoliosis present.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: \n- Endotracheal tube placement can lead to complications such as pneumothorax or atelectasis if not properly positioned.\n- Hazy opacities can indicate atelectasis or fluid accumulation.\n- Nasogastric tubes can cause esophageal distension or displacement of adjacent structures.\n- Thoracolumbar scoliosis can affect respiratory mechanics and increase the risk of respiratory complications.\n\n=== DEDUCTIVE_reasonING ===\nStep 1: The hazy right basilar opacity could be related to atelectasis or fluid accumulation, given its location and association with the endotracheal tube.\nStep 2: The presence of the nasogastric tube is not visible, but its potential impact on surrounding structures cannot be ruled out based solely on this radiograph.\nStep 3: The thoracolumbar scoliosis is noted, but does not directly relate to the current findings.\n\n=== FINAL_DIAGNOSIS ===\n<CLASS",
+  "latency_s": 86.67
 }

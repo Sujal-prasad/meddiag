@@ -1,8 +1,8 @@
 {
   "id": "018",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "No evidence of pneumonia, edema or effusion."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: A left-sided PICC is unchanged in position. Cardiac and mediastinal contours are unchanged from the prior exam. There is no evidence of pulmonary edema. No effusions are identified. There is no pneumothorax. Surgical chain sutures are again seen in the right upper lobe consistent with prior surgery. Again, fullness to the right suprahilar region likely corresponds to a consolidative fibrotic area seen on recent chest CT dated .\nIMPRESSION: No evidence of pneumonia, edema or effusion."
 }

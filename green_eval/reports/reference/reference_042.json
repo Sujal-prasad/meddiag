@@ -1,8 +1,8 @@
 {
   "id": "042",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Interval removal of the endotracheal tube. NG tube and right PICC line in appropriate positioning. Apparent resolution of the small bilateral pleural effusions."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: There has been interval removal of the endotracheal tube. The NG tube is seen in appropriate positioning coursing below the diaphragm with the tip and side hole overlying the stomach. There is a right PICC line terminating in the low SVC. The lungs are otherwise clear. Heart size is normal. The mediastinal and hilar contours are normal. The pulmonary vasculature is normal. No pneumothorax or pleural effusions are visualized.\nIMPRESSION: Interval removal of the endotracheal tube. NG tube and right PICC line in appropriate positioning. Apparent resolution of the small bilateral pleural effusions."
 }

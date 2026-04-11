@@ -1,8 +1,8 @@
 {
   "id": "034",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "In comparison to study obtained four hours prior, there is interval decrease in right apical pneumothorax, now small."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Semi-upright portable view of the chest demonstrates small right apical pneumothorax, which has decreased in size since study obtained four hours prior. No appreciable left pneumothorax. Subcutaneous gas of the chest wall is unchanged. Low lung volumes. No focal consolidation or pleural effusion. Hilar and mediastinal silhouettes are unchanged. Heart size is normal. Trace amount of free air is seen under the right hemidiaphragm.\nIMPRESSION: In comparison to study obtained four hours prior, there is interval decrease in right apical pneumothorax, now small."
 }

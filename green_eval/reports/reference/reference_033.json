@@ -1,8 +1,8 @@
 {
   "id": "033",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Blunting of the right CP angle otherwise normal chest."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: The lungs are clear without infiltrate. The cardiac and mediastinal silhouettes are normal. There is minimal right CP angle blunting compatible with either a tiny effusion or is small amount of pleural thickening the bony thorax appears normal.\nIMPRESSION: Blunting of the right CP angle otherwise normal chest."
 }

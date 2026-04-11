@@ -1,9 +1,9 @@
 {
   "id": "015",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Unchanged appearance of small bilateral pleural effusions status post extubation."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n\n=== DEDUCTIVE_reasonING ===\n\n**Step 1:** Mild cardiomegaly is observed, which could be related to several potential causes based on the clinical evidence.\n\n**Step 2:** Aortic knob calcifications are present, but their significance cannot be determined without further information about their size, location, and relationship to the heart.\n\n**Step 3:** Normal mediastinal contours indicate that there is no immediate indication of mediastinal pathology.\n\n**Step 4:** No pleural effusion, pneumothorax, or focal consolidation are",
-  "latency_s": 98.05
+  "report": "**VISUAL_FINDINGS**\nA single frontal radiograph of the chest shows:\n\n* A tiny right effusion\n* Small left effusion\n* Cardiac contours are unchanged\n* No consolidation, pneumothorax, or nodules present\n* A left-sided PICC line tip terminates in the left brachiocephalic vein\n* A right internal jugular catheter tip terminates in the right atrium\n* A right pleural drain remains in the right base\n* Bilateral bibasilar atelectasis\n* Minimal increase in retrocardiac space\n* Metallic density foreign body projected over the left upper quadrant\n* Endotracheal tube not visible\n\n**CLINICAL_EVIDENCE**\nRetrieved literature: \n- FINDINGS: A single portable chest radiograph demonstrates stable severe cardiomegaly. Pulmonary edema is persistent though improved, now moderate. Right pleural effusion also decreased, now small in size. Bibasilar atelectasis noted, with progressive minimal increase in retrocardiac space. Right dual-lumen catheter with the most distal tip in the distal SVC and proximal tip in right brachiocephalic vein. Left-sided central venous catheter with tip likely in the left br",
+  "latency_s": 82.94
 }

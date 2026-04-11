@@ -1,9 +1,9 @@
 {
   "id": "045",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Significant interval worsening, consider worsening pneumonia, aspiration or edema."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by a mass or fluid collection.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors including hypertension, coronary artery disease, or cardiomyopathy.\n\nStep 2: Aortic knob calcifications are present, suggesting possible degenerative changes or metabolic issues.\n\nStep 3: Normal mediastinal contours indicate no immediate signs of mediastinal pathology.\n\nStep 4: Combining these observations, we must consider whether they collectively suggest an underlying condition affecting the heart.\n\nStep 5: Given the absence of other abnormalities like pleural effusions, pneumothoraces, or focal consolidations",
-  "latency_s": 100.88
+  "report": "=== VISUAL_FINDINGS ===\nBilateral lower lung opacities with bronchovascular distribution; elevated right hemidiaphragm; borderline heart size; thoracolumbar curve.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: Significant interval worsening of bilateral perihilar, lower lung opacities, with bronchovascular distribution, consider worsening pneumonia, aspiration or edema. Elevated right hemidiaphragm stable. Borderline heart size. Thoracolumbar curve.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: The bilateral lower lung opacities with bronchovascular distribution could be related to the clinical evidence suggesting worsening pneumonia, aspiration, or edema.\n\nStep 2: However, the elevated right hemidiaphragm and borderline heart size do not support acute cardiogenic shock or cardiac tamponade.\n\nStep 3: The presence of a thoracolumbar curve does not directly relate to the current radiographic findings.\n\nStep 4: The linear streaky bilateral lower lung opacities might represent atelectasis rather than consolidation.\n\nStep 5: The slight decrease in lung volumes and elevation of the right hemidiaphragm support the notion of volume loss.\n\nStep 6: The lack of pneumoth",
+  "latency_s": 87.1
 }

@@ -1,8 +1,8 @@
 {
   "id": "006",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "NG tube in expected position with tip coiled in the stomach. No other interval change since chest radiograph performed earlier on the same day."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: NG tube is coiled in the stomach. Right PICC in lower SVC is unchanged in position. Cardiac size is normal. Mild bibasilar opacities consistent with atelectasis, unchanged compared to chest radiograph performed earlier in the same day. There is no pneumothorax or pleural effusion.\nIMPRESSION: NG tube in expected position with tip coiled in the stomach. No other interval change since chest radiograph performed earlier on the same day."
 }

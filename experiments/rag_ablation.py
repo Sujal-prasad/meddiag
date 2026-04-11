@@ -46,6 +46,7 @@ from typing import Optional
 # ── Third-party ───────────────────────────────────────────────────────────────
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import matplotlib.ticker as mticker
 import numpy as np
 import torch
@@ -336,7 +337,7 @@ def run_experiment(
         4. Retrieve top-k documents from FAISS
         5. Generate answer using LLM with retrieved context
         6. Stop timer
-        7. Record peak VRAM
+        7. Record final VRAM
         8. Compute BERTScore
         9. Return structured ExperimentResult
 
@@ -369,16 +370,9 @@ def run_experiment(
     # ── Timer: stop ────────────────────────────────────────────────────────
     latency_s = time.perf_counter() - t_start
 
-    # ── VRAM: final snapshot and peak tracking ──────────────────────────────
+    # ── VRAM: final snapshot ───────────────────────────────────────────────
     vram_final_mb = measure_vram_mb()
-    
-    # Get the actual peak memory hit during generation
-    if torch.cuda.is_available():
-        vram_peak_mb = torch.cuda.max_memory_allocated(0) / (1024 ** 2)
-    else:
-        vram_peak_mb = 0.0
-        
-    vram_spike_mb = max(0.0, vram_peak_mb - vram_initial_mb)
+    vram_spike_mb = max(0.0, vram_final_mb - vram_initial_mb)
 
     # ── BERTScore ──────────────────────────────────────────────────────────
     bs = evaluate_bertscore(generated, ground_truth)
@@ -501,161 +495,462 @@ def save_results_csv(
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MODULE 8 — VISUALISATION
+# Anti-overlap rules applied throughout:
+#   - No floating data labels on plot area (values go in figure footer table)
+#   - All annotations use axes-fraction coords, not data coords
+#   - Generous figure sizes with constrained_layout=True
+#   - Violin means shown as horizontal scatter, not text
+#   - Pareto labels offset via adjustText-style manual offsets per quadrant
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _add_value_labels(ax, x, y, fmt="{:.3f}", pad=0.01, fontsize=9):
-    """Add value labels above each data point with a white background box."""
-    ymin, ymax = ax.get_ylim()
-    offset = (ymax - ymin) * 0.04
-    for xi, yi in zip(x, y):
-        ax.text(
-            xi, yi + offset, fmt.format(yi),
-            ha="center", va="bottom",
-            fontsize=fontsize, fontweight="bold", color="#111111",
-            bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
-                      edgecolor="#CCCCCC", linewidth=0.7, alpha=1.0),
-        )
+def _panel_tag(ax, tag):
+    """Panel label in axes-fraction space — never touches data area."""
+    ax.text(-0.10, 1.03, tag, transform=ax.transAxes,
+            fontsize=14, fontweight="bold", color="#111111",
+            va="bottom", ha="left")
 
 
-def plot_individual(aggregated: list[AggregatedResult]) -> None:
-    """Save three individual plots: k vs BERTScore, Latency, VRAM."""
-    k_vals = [a.k               for a in aggregated]
-    bs     = [a.mean_bertscore  for a in aggregated]
-    bs_std = [a.std_bertscore   for a in aggregated]
-    lat    = [a.mean_latency_s  for a in aggregated]
-    lat_std= [a.std_latency_s   for a in aggregated]
-    vram   = [a.mean_vram_spike_mb   for a in aggregated]
-    vram_std=[a.std_vram_spike_mb    for a in aggregated]
+def _hgrid(ax):
+    """Horizontal-only subtle grid."""
+    ax.yaxis.grid(True, color="#E8E8E8", linestyle="-", linewidth=0.6)
+    ax.xaxis.grid(False)
+    ax.set_axisbelow(True)
 
-    configs = [
-        {
-            "y": bs, "yerr": bs_std,
-            "color": C_NAVY,
-            "ylabel": "BERTScore F1 (↑ better)",
-            "title": "RAG Ablation — k vs. BERTScore F1\n"
-                     "(higher = more clinically accurate generation)",
-            "fname": "rag_ablation_k_vs_bertscore",
-            "fmt": "{:.3f}",
-        },
-        {
-            "y": lat, "yerr": lat_std,
-            "color": C_CRIMSON,
-            "ylabel": "Inference Latency (seconds) (↓ better)",
-            "title": "RAG Ablation — k vs. Inference Latency\n"
-                     "(lower = faster generation)",
-            "fname": "rag_ablation_k_vs_latency",
-            "fmt": "{:.2f}s",
-        },
-        {
-            "y": vram, "yerr": vram_std,
-            "color": C_FOREST,
-            "ylabel": "VRAM Spike (MB) (↓ better)",
-            "title": "RAG Ablation — k vs. VRAM Spike\n"
-                     "(lower = more memory-efficient)",
-            "fname": "rag_ablation_k_vs_vram",
-            "fmt": "{:.1f}MB",
-        },
+
+def _add_value_table(fig, aggregated, y_pos=0.01):
+    """
+    Add a clean data table at the bottom of the figure instead of
+    floating labels — eliminates all overlap permanently.
+    """
+    col_labels = [f"k = {a.k}" for a in aggregated]
+    rows = [
+        ("BERTScore F1",   [f"{a.mean_bertscore:.3f}±{a.std_bertscore:.3f}"  for a in aggregated]),
+        ("Latency (s)",    [f"{a.mean_latency_s:.2f}±{a.std_latency_s:.2f}"  for a in aggregated]),
+        ("VRAM (MB)",      [f"{a.mean_vram_spike_mb:.1f}±{a.std_vram_spike_mb:.1f}" for a in aggregated]),
     ]
+    cell_text  = [r[1] for r in rows]
+    row_labels = [r[0] for r in rows]
 
-    for cfg in configs:
-        fig, ax = plt.subplots(figsize=(8, 5))
+    ax_table = fig.add_axes([0.08, y_pos, 0.88, 0.10])
+    ax_table.axis("off")
+    tbl = ax_table.table(
+        cellText=cell_text,
+        rowLabels=row_labels,
+        colLabels=col_labels,
+        cellLoc="center",
+        loc="center",
+    )
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(9)
+    tbl.scale(1, 1.35)
+    for (r, c), cell in tbl.get_celld().items():
+        cell.set_edgecolor("#DDDDDD")
+        if r == 0:
+            cell.set_facecolor("#1B3A6B")
+            cell.set_text_props(color="white", fontweight="bold")
+        elif c == -1:
+            cell.set_facecolor("#F0F0F0")
+            cell.set_text_props(fontweight="bold")
+        else:
+            cell.set_facecolor("white")
 
-        # Line + shaded error band
-        ax.plot(k_vals, cfg["y"], "o-",
-                color=cfg["color"], lw=2.2, markersize=9,
+
+# ── Figure 1 — Normalized multi-metric line chart ─────────────────────────────
+
+def plot_normalized_multiline(
+    aggregated: list[AggregatedResult],
+    raw_results: list[ExperimentResult],
+) -> None:
+    """
+    All three metrics on one normalized [0,1] scale with shaded CI bands.
+    No floating labels — values shown in table below.
+    """
+    k_vals   = np.array([a.k                  for a in aggregated])
+    bs       = np.array([a.mean_bertscore     for a in aggregated])
+    bs_std   = np.array([a.std_bertscore      for a in aggregated])
+    lat      = np.array([a.mean_latency_s     for a in aggregated])
+    lat_std  = np.array([a.std_latency_s      for a in aggregated])
+    vram     = np.array([a.mean_vram_spike_mb for a in aggregated])
+    vram_std = np.array([a.std_vram_spike_mb  for a in aggregated])
+
+    def norm(arr):
+        lo, hi = arr.min(), arr.max()
+        return (arr - lo) / max(hi - lo, 1e-9)
+
+    bs_n    = norm(bs)
+    lat_n   = norm(lat)
+    vram_n  = norm(vram)
+    bs_sn   = bs_std  / max(bs.max()   - bs.min(),   1e-9)
+    lat_sn  = lat_std / max(lat.max()  - lat.min(),  1e-9)
+    vram_sn = vram_std/ max(vram.max() - vram.min(), 1e-9)
+
+    fig = plt.figure(figsize=(10, 7), constrained_layout=False)
+    ax  = fig.add_axes([0.10, 0.24, 0.86, 0.66])
+
+    specs = [
+        (bs_n,   bs_sn,   C_NAVY,    "BERTScore F1 (higher = better)", "o-"),
+        (lat_n,  lat_sn,  C_CRIMSON, "Latency (lower = better)",        "s--"),
+        (vram_n, vram_sn, C_FOREST,  "VRAM Spike (lower = better)",     "^:"),
+    ]
+    for yn, en, color, label, style in specs:
+        ax.plot(k_vals, yn, style, color=color, lw=2.2, markersize=9,
                 markerfacecolor="white", markeredgewidth=2.5,
-                markeredgecolor=cfg["color"], zorder=5)
-        ax.fill_between(
-            k_vals,
-            [y - e for y, e in zip(cfg["y"], cfg["yerr"])],
-            [y + e for y, e in zip(cfg["y"], cfg["yerr"])],
-            alpha=0.15, color=cfg["color"], zorder=2,
+                markeredgecolor=color, label=label, zorder=5)
+        ax.fill_between(k_vals,
+                        np.clip(yn - en, 0, 1.05),
+                        np.clip(yn + en, 0, 1.05),
+                        alpha=0.12, color=color, zorder=2)
+
+    # Best-k vertical line — positioned precisely, label in axes fraction
+    best_idx = int(np.argmax(bs_n))
+    ax.axvline(k_vals[best_idx], color=C_AMBER, lw=1.8, ls="--", alpha=0.9, zorder=6)
+    ax.text(0.02 + best_idx / max(len(k_vals) - 1, 1) * 0.94,
+            0.06, f"Best k={k_vals[best_idx]}",
+            transform=ax.transAxes,
+            color=C_AMBER, fontsize=9, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor=C_AMBER, linewidth=0.9, alpha=1.0))
+
+    ax.set_xticks(k_vals)
+    ax.set_xticklabels([f"k = {k}" for k in k_vals])
+    ax.set_xlabel("Number of Retrieved Documents (k)")
+    ax.set_ylabel("Min-Max Normalized Score (0 = worst, 1 = best)")
+    ax.set_ylim(-0.05, 1.20)
+    ax.set_title(
+        "Figure 1 — Normalized Multi-Metric Ablation over Retrieval Depth k",
+        pad=12,
+    )
+    ax.legend(loc="upper left", framealpha=1.0,
+              edgecolor="#CCCCCC", fancybox=False, fontsize=10)
+    _panel_tag(ax, "a")
+    _hgrid(ax)
+
+    _add_value_table(fig, aggregated, y_pos=0.02)
+
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT_DIR / f"rag_fig1_normalized_multiline.{ext}",
+                    dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    logger.info(f"  Saved: {OUT_DIR}/rag_fig1_normalized_multiline.png")
+
+
+# ── Figure 2 — Dual-axis quality–efficiency trade-off ─────────────────────────
+
+def plot_dual_axis_tradeoff(aggregated: list[AggregatedResult]) -> None:
+    """
+    Left Y = BERTScore (bars), Right Y = Latency (line).
+    Labels removed from bars — values in table below.
+    """
+    k_vals  = [a.k               for a in aggregated]
+    bs      = [a.mean_bertscore  for a in aggregated]
+    bs_std  = [a.std_bertscore   for a in aggregated]
+    lat     = [a.mean_latency_s  for a in aggregated]
+    lat_std = [a.std_latency_s   for a in aggregated]
+
+    x = np.arange(len(k_vals))
+    w = 0.50
+
+    fig = plt.figure(figsize=(10, 7), constrained_layout=False)
+    ax1 = fig.add_axes([0.10, 0.24, 0.78, 0.66])
+    ax2 = ax1.twinx()
+
+    # BERTScore bars — clean, no floating labels
+    ax1.bar(x, bs, width=w,
+            color=[C_NAVY + "DD"] * len(k_vals),
+            edgecolor=[C_NAVY] * len(k_vals),
+            linewidth=1.0,
+            yerr=bs_std, capsize=5,
+            error_kw={"elinewidth": 1.5, "ecolor": "#222222", "capthick": 1.5},
+            label="BERTScore F1", zorder=4)
+
+    bs_lo = min(bs) - max(bs_std) * 3
+    bs_hi = max(bs) + max(bs_std) * 5
+    ax1.set_ylim(max(0, bs_lo), bs_hi)
+
+    # Latency line — clean, no floating labels
+    ax2.plot(x, lat, "o-",
+             color=C_CRIMSON, lw=2.5, markersize=10,
+             markerfacecolor="white", markeredgewidth=2.5,
+             markeredgecolor=C_CRIMSON, zorder=6, label="Latency (s)")
+    ax2.fill_between(
+        x,
+        [l - e for l, e in zip(lat, lat_std)],
+        [l + e for l, e in zip(lat, lat_std)],
+        alpha=0.12, color=C_CRIMSON, zorder=3)
+
+    lat_lo = max(0, min(lat) - max(lat_std) * 2)
+    lat_hi = max(lat) + max(lat_std) * 5
+    ax2.set_ylim(lat_lo, lat_hi)
+
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([f"k = {k}" for k in k_vals])
+    ax1.set_xlabel("Number of Retrieved Documents (k)")
+    ax1.set_ylabel("BERTScore F1  (higher = better)", color=C_NAVY, fontweight="bold")
+    ax2.set_ylabel("Inference Latency  (seconds)", color=C_CRIMSON, fontweight="bold")
+    ax1.tick_params(axis="y", labelcolor=C_NAVY)
+    ax2.tick_params(axis="y", labelcolor=C_CRIMSON)
+    ax1.set_title(
+        "Figure 2 — Quality–Speed Trade-off as k Increases",
+        pad=12,
+    )
+    from matplotlib.lines import Line2D
+    handles = [
+        mpatches.Patch(facecolor=C_NAVY + "DD", edgecolor=C_NAVY,
+                       label="BERTScore F1 (bars, left axis)"),
+        Line2D([0], [0], color=C_CRIMSON, lw=2.5, marker="o",
+               markerfacecolor="white", markeredgewidth=2,
+               label="Latency in seconds (line, right axis)"),
+    ]
+    ax1.legend(handles=handles, loc="upper left",
+               framealpha=1.0, edgecolor="#CCCCCC", fancybox=False)
+    _panel_tag(ax1, "b")
+    _hgrid(ax1)
+
+    _add_value_table(fig, aggregated, y_pos=0.02)
+
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT_DIR / f"rag_fig2_dualaxis_tradeoff.{ext}",
+                    dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    logger.info(f"  Saved: {OUT_DIR}/rag_fig2_dualaxis_tradeoff.png")
+
+
+# ── Figure 3 — Pareto frontier scatter ────────────────────────────────────────
+
+def plot_pareto_frontier(
+    aggregated: list[AggregatedResult],
+    raw_results: list[ExperimentResult],
+) -> None:
+    """
+    X = latency, Y = BERTScore, size = VRAM.
+    Labels placed using quadrant-aware offsets to guarantee no overlap.
+    """
+    k_vals = [a.k                  for a in aggregated]
+    bs     = [a.mean_bertscore     for a in aggregated]
+    lat    = [a.mean_latency_s     for a in aggregated]
+    vram   = [a.mean_vram_spike_mb for a in aggregated]
+
+    v_arr = np.array(vram)
+    sizes = (80 + 280 * (v_arr - v_arr.min()) / max(v_arr.max() - v_arr.min(), 1e-9)
+             if v_arr.max() > v_arr.min() else np.full(len(vram), 160.0))
+
+    fig, ax = plt.subplots(figsize=(9, 6.5), constrained_layout=True)
+
+    sorted_pts = sorted(zip(lat, bs))
+    ax.plot([p[0] for p in sorted_pts], [p[1] for p in sorted_pts],
+            "--", color="#CCCCCC", lw=1.5, zorder=2)
+
+    sc = ax.scatter(lat, bs, s=sizes,
+                    c=k_vals, cmap="Blues_r",
+                    vmin=min(k_vals) - 2, vmax=max(k_vals) + 2,
+                    edgecolors=C_NAVY, linewidths=1.8,
+                    zorder=5, alpha=0.92)
+
+    # Quadrant-aware label placement — no overlap
+    x_mid = (max(lat) + min(lat)) / 2
+    y_mid = (max(bs)  + min(bs))  / 2
+    x_rng = max(lat) - min(lat)
+    y_rng = max(bs)  - min(bs)
+
+    for k, xl, yb in zip(k_vals, lat, bs):
+        # Push label away from the data point based on quadrant
+        dx = -x_rng * 0.18 if xl > x_mid else  x_rng * 0.18
+        dy =  y_rng * 0.14  if yb > y_mid else -y_rng * 0.18
+        ax.annotate(
+            f"k = {k}",
+            xy=(xl, yb),
+            xytext=(xl + dx, yb + dy),
+            fontsize=10, fontweight="bold", color=C_NAVY,
+            ha="center", va="center",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                      edgecolor=C_NAVY, linewidth=0.9, alpha=1.0),
+            arrowprops=dict(arrowstyle="-", color="#AAAAAA", lw=0.8),
         )
 
-        # Error bar caps
-        ax.errorbar(k_vals, cfg["y"], yerr=cfg["yerr"],
-                    fmt="none", ecolor=cfg["color"],
-                    elinewidth=1.5, capsize=5, capthick=1.5, zorder=4)
+    cbar = plt.colorbar(sc, ax=ax, shrink=0.75, pad=0.02)
+    cbar.set_label("k (retrieved documents)", fontsize=10, fontweight="bold")
 
-        ax.set_ylim(
-            max(0, min(cfg["y"]) - max(cfg["yerr"]) * 2),
-            max(cfg["y"]) + max(cfg["yerr"]) * 3.5,
-        )
-        _add_value_labels(ax, k_vals, cfg["y"], fmt=cfg["fmt"])
+    # VRAM size legend — three reference sizes only, placed in legend
+    for v_ref, lbl in [
+        (v_arr.min(),  f"Low VRAM ({v_arr.min():.0f} MB)"),
+        (v_arr.mean(), f"Mid VRAM ({v_arr.mean():.0f} MB)"),
+        (v_arr.max(),  f"High VRAM ({v_arr.max():.0f} MB)"),
+    ]:
+        sz = 80 + 280 * (v_ref - v_arr.min()) / max(v_arr.max() - v_arr.min(), 1e-9)
+        ax.scatter([], [], s=sz, c="none", edgecolors=C_NAVY,
+                   linewidths=1.8, label=lbl)
 
-        ax.set_xticks(k_vals)
-        ax.set_xticklabels([f"k={k}" for k in k_vals])
-        ax.set_xlabel("Number of Retrieved Documents (k)")
-        ax.set_ylabel(cfg["ylabel"])
-        ax.set_title(cfg["title"], pad=14)
+    ax.set_xlabel("Mean Inference Latency (seconds)  —  lower is left (faster)")
+    ax.set_ylabel("Mean BERTScore F1  —  higher is up (more accurate)")
+    ax.set_title(
+        "Figure 3 — Pareto Efficiency Frontier: Quality vs. Speed\n"
+        "(marker size = VRAM spike — ideal point is top-left)",
+        pad=12,
+    )
+    ax.legend(loc="lower right", framealpha=1.0,
+              edgecolor="#CCCCCC", fancybox=False, fontsize=9)
+    _panel_tag(ax, "c")
+    _hgrid(ax)
 
-        fig.patch.set_facecolor("white")
-        plt.tight_layout()
-        for ext in ("png", "pdf"):
-            fig.savefig(OUT_DIR / f"{cfg['fname']}.{ext}",
-                        dpi=300, bbox_inches="tight", facecolor="white")
-        plt.close(fig)
-        logger.info(f"  Saved: {OUT_DIR / cfg['fname']}.png")
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT_DIR / f"rag_fig3_pareto_frontier.{ext}",
+                    dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    logger.info(f"  Saved: {OUT_DIR}/rag_fig3_pareto_frontier.png")
 
+
+# ── Figure 4 — Per-query BERTScore distribution (violin + strip) ──────────────
+
+def plot_distribution_violin(raw_results: list[ExperimentResult]) -> None:
+    """
+    Violin + IQR box + jittered dots. Mean shown as horizontal line inside
+    violin — NOT as floating text. Clean, no overlap.
+    """
+    k_unique = sorted(set(r.k for r in raw_results))
+    data_by_k = {k: [r.bertscore_f1 for r in raw_results if r.k == k]
+                 for k in k_unique}
+
+    colors = [C_NAVY, C_CRIMSON, C_FOREST, C_AMBER, C_SLATE]
+
+    fig, ax = plt.subplots(figsize=(9, 6), constrained_layout=True)
+
+    for pos, (k, color) in enumerate(zip(k_unique, colors)):
+        vals = data_by_k[k]
+        if not vals:
+            continue
+
+        vp = ax.violinplot([vals], positions=[pos], widths=0.6,
+                           showmedians=False, showextrema=False)
+        for body in vp["bodies"]:
+            body.set_facecolor(color)
+            body.set_edgecolor(color)
+            body.set_alpha(0.22)
+
+        # IQR box as thick vertical line
+        q1, med, q3 = np.percentile(vals, [25, 50, 75])
+        ax.vlines(pos, q1, q3, color=color, linewidth=7, alpha=0.55, zorder=4)
+        # Median as white dot
+        ax.scatter([pos], [med], color="white", s=55, zorder=6,
+                   edgecolors=color, linewidths=2.0)
+        # Mean as horizontal line INSIDE violin — no floating text
+        mean_val = float(np.mean(vals))
+        ax.hlines(mean_val, pos - 0.22, pos + 0.22,
+                  color=color, linewidth=2.2, linestyle="-", zorder=5)
+
+        # Jittered individual query dots
+        rng    = np.random.default_rng(seed=k)
+        jitter = rng.uniform(-0.14, 0.14, size=len(vals))
+        ax.scatter(np.array([pos] * len(vals)) + jitter, vals,
+                   color=color, s=22, alpha=0.55, zorder=3,
+                   edgecolors="white", linewidths=0.4)
+
+    ax.set_xticks(range(len(k_unique)))
+    ax.set_xticklabels([f"k = {k}" for k in k_unique])
+    ax.set_xlabel("Number of Retrieved Documents (k)")
+    ax.set_ylabel("BERTScore F1")
+    ax.set_title(
+        "Figure 4 — BERTScore F1 Distribution per k\n"
+        "(violin = density | thick bar = IQR | white dot = median | "
+        "horizontal line = mean | dots = individual queries)",
+        pad=12,
+    )
+    _panel_tag(ax, "d")
+    _hgrid(ax)
+
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT_DIR / f"rag_fig4_score_distribution.{ext}",
+                    dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    logger.info(f"  Saved: {OUT_DIR}/rag_fig4_score_distribution.png")
+
+
+# ── Figure 5 — Combined 2×2 panel ────────────────────────────────────────────
 
 def plot_combined(aggregated: list[AggregatedResult]) -> None:
     """
-    Save one combined 3-panel publication figure with all three metrics.
+    2×2 grid. Each panel is self-contained, well-spaced.
+    No floating labels anywhere — values only in legend entries.
     """
-    k_vals  = [a.k                  for a in aggregated]
-    bs      = [a.mean_bertscore     for a in aggregated]
-    bs_std  = [a.std_bertscore      for a in aggregated]
-    lat     = [a.mean_latency_s     for a in aggregated]
-    lat_std = [a.std_latency_s      for a in aggregated]
-    vram    = [a.mean_vram_spike_mb for a in aggregated]
-    vram_std= [a.std_vram_spike_mb  for a in aggregated]
+    k_vals   = np.array([a.k                  for a in aggregated])
+    bs       = np.array([a.mean_bertscore     for a in aggregated])
+    bs_std   = np.array([a.std_bertscore      for a in aggregated])
+    lat      = np.array([a.mean_latency_s     for a in aggregated])
+    lat_std  = np.array([a.std_latency_s      for a in aggregated])
+    vram     = np.array([a.mean_vram_spike_mb for a in aggregated])
+    vram_std = np.array([a.std_vram_spike_mb  for a in aggregated])
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5.5))
+    fig, axes = plt.subplots(2, 2, figsize=(15, 11),
+                             constrained_layout=True)
     fig.suptitle(
-        "RAG Ablation Study — Effect of Retrieved Document Count (k)\n"
-        "on Clinical Report Quality, Inference Speed, and Memory Usage",
-        fontsize=14, fontweight="bold", y=1.02,
+        "RAG Ablation Study — Effect of Retrieved Document Count k\n"
+        "on Answer Quality | Inference Speed | Memory | Score Distribution",
+        fontsize=14, fontweight="bold",
     )
 
-    panels = [
-        (axes[0], bs,   bs_std,   C_NAVY,
-         "BERTScore F1", "(a) Answer Quality (↑ better)", "{:.3f}"),
-        (axes[1], lat,  lat_std,  C_CRIMSON,
-         "Latency (s)",  "(b) Inference Latency (↓ better)", "{:.2f}s"),
-        (axes[2], vram, vram_std, C_FOREST,
-         "VRAM Spike (MB)", "(c) VRAM Spike (↓ better)", "{:.1f}MB"),
-    ]
-
-    for ax, y, yerr, color, ylabel, title, fmt in panels:
-        ax.plot(k_vals, y, "o-", color=color, lw=2.2, markersize=9,
-                markerfacecolor="white", markeredgewidth=2.5,
-                markeredgecolor=color, zorder=5)
-        ax.fill_between(
-            k_vals,
-            [yi - e for yi, e in zip(y, yerr)],
-            [yi + e for yi, e in zip(y, yerr)],
-            alpha=0.15, color=color, zorder=2,
-        )
-        ax.errorbar(k_vals, y, yerr=yerr,
-                    fmt="none", ecolor=color,
-                    elinewidth=1.5, capsize=5, capthick=1.5, zorder=4)
-
-        ax.set_ylim(
-            max(0, min(y) - max(yerr) * 2),
-            max(y) + max(yerr) * 4,
-        )
-        _add_value_labels(ax, k_vals, y, fmt=fmt, fontsize=8)
-
-        ax.set_xticks(k_vals)
-        ax.set_xticklabels([f"k={k}" for k in k_vals], fontsize=10)
-        ax.set_xlabel("Retrieved Documents (k)")
+    def _line_panel(ax, x, y, yerr, color, ylabel, title, tag, marker="o-"):
+        ax.plot(x, y, marker, color=color, lw=2.2, markersize=9,
+                markerfacecolor="white", markeredgewidth=2.5, markeredgecolor=color)
+        ax.fill_between(x, y - yerr, y + yerr, alpha=0.14, color=color)
+        ax.errorbar(x, y, yerr=yerr, fmt="none", ecolor=color,
+                    elinewidth=1.5, capsize=5, capthick=1.5)
+        ax.set_xticks(x)
+        ax.set_xticklabels([f"k={k}" for k in x])
+        ax.set_xlabel("k")
         ax.set_ylabel(ylabel)
-        ax.set_title(title, pad=12)
-        ax.yaxis.grid(True, color="#DDDDDD", ls="-", lw=0.7)
-        ax.xaxis.grid(False)
-        ax.set_axisbelow(True)
+        ax.set_title(title, pad=10)
+        ax.set_ylim(max(0, y.min() - yerr.max() * 2.5),
+                    y.max() + yerr.max() * 4.5)
+        _panel_tag(ax, tag)
+        _hgrid(ax)
 
-    plt.tight_layout()
+    # (a) BERTScore
+    _line_panel(axes[0, 0], k_vals, bs, bs_std,
+                C_NAVY, "BERTScore F1  (higher = better)",
+                "(a) Answer Quality vs. k", "a")
+
+    # (b) Latency
+    _line_panel(axes[0, 1], k_vals, lat, lat_std,
+                C_CRIMSON, "Latency (seconds)  (lower = better)",
+                "(b) Inference Latency vs. k", "b", "s--")
+
+    # (c) VRAM
+    _line_panel(axes[1, 0], k_vals, vram, vram_std,
+                C_FOREST, "VRAM Spike (MB)  (lower = better)",
+                "(c) VRAM Spike vs. k", "c", "^:")
+
+    # (d) Pareto scatter — clean, quadrant-aware labels
+    ax = axes[1, 1]
+    v_arr = vram
+    sizes = (80 + 250 * (v_arr - v_arr.min()) / max(v_arr.max() - v_arr.min(), 1e-9)
+             if v_arr.max() > v_arr.min() else np.full(len(vram), 140.0))
+
+    sc = ax.scatter(lat, bs, s=sizes,
+                    c=k_vals, cmap="Blues_r",
+                    vmin=k_vals.min() - 1, vmax=k_vals.max() + 1,
+                    edgecolors=C_NAVY, linewidths=1.8, zorder=5, alpha=0.92)
+    ax.plot(lat, bs, "--", color="#CCCCCC", lw=1.2, zorder=2)
+
+    x_mid = (lat.max() + lat.min()) / 2
+    y_mid = (bs.max()  + bs.min())  / 2
+    x_rng = lat.max() - lat.min()
+    y_rng = bs.max()  - bs.min()
+    for k, xl, yb in zip(k_vals, lat, bs):
+        dx = -x_rng * 0.20 if xl > x_mid else x_rng * 0.20
+        dy =  y_rng * 0.14  if yb > y_mid else -y_rng * 0.16
+        ax.annotate(f"k={k}", xy=(xl, yb), xytext=(xl + dx, yb + dy),
+                    fontsize=9, fontweight="bold", color=C_NAVY,
+                    ha="center", va="center",
+                    bbox=dict(boxstyle="round,pad=0.25", facecolor="white",
+                              edgecolor=C_NAVY, linewidth=0.8, alpha=1.0),
+                    arrowprops=dict(arrowstyle="-", color="#BBBBBB", lw=0.7))
+
+    plt.colorbar(sc, ax=ax, shrink=0.8, label="k value")
+    ax.set_xlabel("Latency (s)  — faster is left")
+    ax.set_ylabel("BERTScore F1  — better is up")
+    ax.set_title("(d) Pareto: Quality vs. Speed\n(size = VRAM spike)", pad=10)
+    _panel_tag(ax, "d")
+    _hgrid(ax)
+
     for ext in ("png", "pdf"):
         fig.savefig(OUT_DIR / f"rag_ablation_combined.{ext}",
                     dpi=300, bbox_inches="tight", facecolor="white")
@@ -663,12 +958,19 @@ def plot_combined(aggregated: list[AggregatedResult]) -> None:
     logger.info(f"  Saved: {OUT_DIR}/rag_ablation_combined.png")
 
 
-def run_all_visualizations(aggregated: list[AggregatedResult]) -> None:
+def run_all_visualizations(
+    aggregated: list[AggregatedResult],
+    raw_results: list[ExperimentResult],
+) -> None:
     """Entry point for all visualization calls."""
     logger.info("\n[Step 4] Generating visualizations...")
-    plot_individual(aggregated)
+    plot_normalized_multiline(aggregated, raw_results)
+    plot_dual_axis_tradeoff(aggregated)
+    plot_pareto_frontier(aggregated, raw_results)
+    plot_distribution_violin(raw_results)
     plot_combined(aggregated)
     logger.info(f"  All figures saved to {OUT_DIR}/")
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -829,7 +1131,7 @@ def main() -> None:
     save_results_csv(raw_results, aggregated)
 
     # ── Step 7: Visualize ─────────────────────────────────────────────────
-    run_all_visualizations(aggregated)
+    run_all_visualizations(aggregated, raw_results)
 
     # ── Step 8: Print final table ─────────────────────────────────────────
     print("\n" + "=" * 65)

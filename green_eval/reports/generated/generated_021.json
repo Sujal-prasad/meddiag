@@ -1,9 +1,9 @@
 {
   "id": "021",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Substantially increased, large, bilateral pleural effusions."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with conditions such as hypertension, coronary artery disease, or cardiomyopathy.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by a mass or fluid collection.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to various factors including hypertension, coronary artery disease, or cardiomyopathy.\n\nStep 2: Aortic knob calcifications are present, suggesting possible degenerative changes over time.\n\nStep 3: Normal mediastinal contours indicate no immediate signs of mediastinal pathology.\n\nStep 4: Combining these observations, we note that while some abnormalities are present, they do not suggest an acute or severe condition.\n\n=== FINAL_DIAGNOSIS ===\n\n<FINAL_DIAGNOSIS>\nCLASSIFICATION: NORMAL\nPRIMARY",
-  "latency_s": 86.8
+  "report": "=== VISUAL_FINDINGS ===\nInflated lung parenchyma appears grossly clear, but is incompletely evaluated due to substantial pleural effusions. A Dobhoff tube is unchanged in position, terminating in the mid stomach. A right-sided port is unchanged in position. Moderate left-sided pleural effusion. Multiple surgical clips project over the left mid lung. Nasogastric tube, tip in the stomach, side hole at the gastroesophageal junction.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved literature: Impression - Overall stable position of the two. Impression - As above.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: \nThe presence of substantial pleural effusions is consistent with the impression of substantially increased, large, bilateral pleural effusions reported by the radiologist.\n\nStep 2: \nThe unchanged position of the Dobhoff tube and right-sided port suggests that there is no immediate concern for complications related to these devices.\n\nStep 3: \nThe moderate left-sided pleural effusion may indicate some degree of respiratory compromise or possible pulmonary edema.\n\nStep 4: \nMultiple surgical clips projecting over the left mid lung suggest recent thoracic surgery.\n\nStep 5: \nThe nasogastric",
+  "latency_s": 81.61
 }

@@ -1,8 +1,8 @@
 {
   "id": "016",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Bilateral pleural effusion, right greater than left. Underlying consolidation cannot be completely excluded. Recommend repositioning. NG tube terminates in stomach with sidehole in distal esophagus. Right PICC terminates in the axilla."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Frontal supine view of the chest was obtained. The heart is of normal size with normal cardiomediastinal contours. The right hemithorax demontrates increased opacity, compatible with a moderate-to-large size layering pleural effusion. A small left pleural effusion is also present. No pneumothorax is seen. A right PICC line terminates in the axilla. A Dobbhoff feeding tube and a gastric tube terminate below the diaphragm. The sidehole of the gastric tube is positioned in the distal esophagus.\nIMPRESSION: Bilateral pleural effusion, right greater than left. Underlying consolidation cannot be completely excluded. Recommend repositioning. NG tube terminates in stomach with sidehole in distal esophagus. Right PICC terminates in the axilla."
 }

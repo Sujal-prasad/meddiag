@@ -1,8 +1,8 @@
 {
   "id": "009",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "No acute cardiopulmonary abnormality."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: Patient is status post median sternotomy and CABG. Heart size is normal. Mediastinal and hilar contours are unchanged. Pulmonary vasculature is normal. No focal consolidation, pleural effusion or pneumothorax is seen. No acute osseous abnormality is detected.\nIMPRESSION: No acute cardiopulmonary abnormality."
 }

@@ -1,9 +1,9 @@
 {
   "id": "019",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Pneumoperitoneum. Widening of the vascular pedicle may be related to low lung volumes and intravascular volume status."
   ],
-  "report": "=== VISUAL_FINDINGS ===\nMild cardiomegaly, aortic knob calcifications, normal mediastinal contours, no pleural effusion, pneumothorax, or focal consolidation.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved from FAISS RAG:\n\n* Mild cardiomegaly: Focal cardiomegaly may be associated with various conditions including hypertension, coronary artery disease, or cardiac hypertrophy. However, without further information about the etiology, it remains unclear.\n* Aortic knob calcifications: Calcification can occur due to aging, atherosclerosis, or other metabolic disorders.\n* Normal mediastinal contours: This suggests that there is no apparent compression or invasion of the mediastinum by masses or fluid collections.\n* No pleural effusion, pneumothorax, or focal consolidation: These findings indicate no current respiratory compromise.\n\n=== DEDUCTIVE_reasonING ===\n\nStep 1: Cardiomegaly is observed, which could be related to several factors mentioned above.\n\nStep 2: Aortic knob calcifications also present but do not directly correlate with the primary concern of cardiomegaly.\n\nStep 3: Normal mediastinal contours suggest that there's no immediate cause for concern regarding",
-  "latency_s": 87.01
+  "report": "=== VISUAL_FINDINGS ===\nFree air is present underneath both hemidiaphragms. Lung volumes are low. The vascular pedicle is widened and there is slightly increased rightward shift of the trachea, which may be projectional. Multi focal ill-defined lung opacities are similar to prior and consistent with history of sarcoidosis although superimposed infection cannot be excluded. No pneumothorax or substantial pleural effusion. Chain sutures in the right mid lung are similar to prior.\n\n=== CLINICAL_EVIDENCE ===\nRetrieved Literature:\n- Findings: \n  - Single frontal view of the chest was obtained. Free air is present underneath both hemidiaphragms. Lung volumes are low. The vascular pedicle is widened and there is slightly increased rightward shift of the trachea, which may be projectional. Multi focal ill-defined lung opacities are similar to prior and consistent with history of sarcoidosis although superimposed infection cannot be excluded. No pneumothorax or substantial pleural effusion. Chain sutures in the right mid lung are similar to prior.\n  - AP view of the chest. Again seen are findings consistent with perihilar fibrosis/consolidation in this patient with history",
+  "latency_s": 82.81
 }

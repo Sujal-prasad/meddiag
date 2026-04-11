@@ -1,8 +1,8 @@
 {
   "id": "013",
-  "dataset": "nih",
+  "dataset": "mimic_reports",
   "labels": [
-    "NORMAL"
+    "Compared to the most recent study, there is improvement in the mild pulmonary edema and decrease in the small left pleural effusion. Moderate right pleural effusion and bibasilar atelectasis are stable."
   ],
-  "report": "LABEL: NORMAL\nNo detailed report available."
+  "report": "FINDINGS: A bedside AP radiograph of the chest demonstrates interval improvement in mild pulmonary edema compared to the most recent study from . A moderate right pleural effusion is stable and a small left pleural effusion has also decreased in size. Aside from persistent bibasilar atelectasis, the lungs are clear. The hilar and cardiomediastinal contours are normal. There is no pneumothorax. A left PICC terminates in the mid SVC. A Dobbhoff tube terminates in the stomach and a second enteric tube enters the stomach and courses inferiorly beyond the field of view.\nIMPRESSION: Compared to the most recent study, there is improvement in the mild pulmonary edema and decrease in the small left pleural effusion. Moderate right pleural effusion and bibasilar atelectasis are stable."
 }
