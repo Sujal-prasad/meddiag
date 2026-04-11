@@ -132,11 +132,11 @@ class QuantizationConfig:
     NF4 is optimal for normally-distributed LLM weights.
     Dequantizes to bfloat16 only during forward pass → resting footprint ~2.5GB.
     """
-    load_in_4bit:            bool        = True
-    bnb_4bit_quant_type:     str         = "nf4"
-    bnb_4bit_compute_dtype:  torch.dtype = torch.bfloat16
-    bnb_4bit_use_double_quant: bool      = True       # saves ~0.4GB extra
-    bnb_4bit_quant_storage:  torch.dtype = torch.uint8
+    load_in_4bit:             bool        = True
+    bnb_4bit_quant_type:      str         = "nf4"
+    bnb_4bit_compute_dtype:   torch.dtype = torch.bfloat16
+    bnb_4bit_use_double_quant: bool       = True       # saves ~0.4GB extra
+    bnb_4bit_quant_storage:   torch.dtype = torch.uint8
 
     def to_bnb_config(self) -> BitsAndBytesConfig:
         return BitsAndBytesConfig(
@@ -746,7 +746,7 @@ class EdgeMedicalVLM:
         CLASSIFICATION: [NORMAL | ABNORMAL]
         PRIMARY_FINDING: [Most significant observation]
         CONFIDENCE: [HIGH | MEDIUM | LOW]
-        RECOMMATION: [Suggested clinical action]
+        RECOMMENDATION: [Suggested clinical action]
         </FINAL_DIAGNOSIS>
     """).strip()
 
@@ -1091,14 +1091,30 @@ def main() -> None:
         manager   = QLoRAModelManager()
         manager.load_model()
 
-        # ---------------------------------------------------------
-        # FIX: Instantiate the Optimizer (only for trainable LoRA params)
-        # ---------------------------------------------------------
-        trainable_params = [p for p in manager.model.parameters() if p.requires_grad]
-        optimizer = torch.optim.AdamW(trainable_params, lr=train_cfg.learning_rate)
-        optimizer.zero_grad()
+        # ── Optimizer + LR scheduler (were MISSING — root cause of flat loss) ──
+        # Without an optimizer, loss.backward() computes gradients but they are
+        # NEVER applied to the model weights. Loss stays flat because nothing
+        # actually updates.
+        from torch.optim import AdamW
+        from transformers import get_cosine_schedule_with_warmup
 
-        loader      = StreamingDatasetManager()
+        optimizer = AdamW(
+            filter(lambda p: p.requires_grad, manager.model.parameters()),
+            lr=train_cfg.learning_rate,
+            weight_decay=0.01,
+            betas=(0.9, 0.95),
+        )
+        total_steps   = (train_cfg.SAMPLES_PER_DATASET * 5) // train_cfg.gradient_accumulation_steps
+        warmup_steps  = max(1, int(total_steps * train_cfg.warmup_ratio))
+        scheduler = get_cosine_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=warmup_steps,
+            num_training_steps=total_steps,
+        )
+        logger.info(f"Optimizer ready | lr={train_cfg.learning_rate} | "
+                    f"total_steps={total_steps} | warmup={warmup_steps}")
+
+        loader       = StreamingDatasetManager()
         ALL_DATASETS = ["nih", "chexpert", "iu_xray", "mimic_reports", "padchest"]
 
         def interleaved_stream():
@@ -1117,28 +1133,46 @@ def main() -> None:
         total  = 0
         t0     = time.perf_counter()
         texts  = []
-        n_acc  = 0   # gradient accumulation counter
+        targets= []   # separate target strings for next-token supervision
+        n_acc  = 0
+        optimizer.zero_grad()
 
         for sample in interleaved_stream():
             label_str = ", ".join(sample["labels"])
             dataset   = sample["dataset"]
 
-            # Dataset-specific prompt format
-            if dataset in ("mimic_reports", "iu_xray"):
-                text = (
-                    f"[RADIOLOGY REPORT]\nFindings: {label_str}\n"
-                    f"Generate a clinical impression:"
+            # Build input + target pairs for causal LM training.
+            # Input  = clinical prompt
+            # Target = clinically meaningful completion the model should learn
+            # Previously BOTH input and labels were the same short prompt string,
+            # giving the model nothing to predict — a second cause of flat loss.
+            if dataset in ("mimic_reports", "mimic_rag"):
+                text   = (
+                    f"[RADIOLOGY REPORT]\nFindings: {sample.get('text', label_str)}\n"
+                    f"Impression:"
                 )
+                target = sample.get("report") or label_str
             else:
-                text = (
+                text   = (
                     f"[CHEST X-RAY ANALYSIS]\nDataset: {dataset.upper()}\n"
                     f"Diagnose: {label_str}\nClinical assessment:"
                 )
-            texts.append(text)
+                target = (
+                    "NORMAL — no acute cardiopulmonary findings."
+                    if "NORMAL" in label_str.upper()
+                    else f"ABNORMAL — findings consistent with {label_str}."
+                )
+
+            # Concatenate prompt + target as a single sequence.
+            # Labels mask the prompt tokens (-100) so loss is only on target.
+            full_text = text + " " + target + manager.tokenizer.eos_token
+            texts.append(full_text)
+            targets.append(text)   # used to compute prompt length for masking
 
             if len(texts) == train_cfg.per_device_train_batch_size:
                 try:
-                    tok = manager.tokenizer(
+                    # Tokenize full sequences
+                    tok_full = manager.tokenizer(
                         texts,
                         padding="max_length",
                         truncation=True,
@@ -1146,32 +1180,47 @@ def main() -> None:
                         return_tensors="pt",
                     ).to(manager.model.device)
 
+                    # Tokenize prompts only to get lengths for masking
+                    tok_prompt = manager.tokenizer(
+                        targets,
+                        padding=False,
+                        truncation=True,
+                        max_length=train_cfg.MAX_SEQ_LENGTH,
+                        return_tensors=None,
+                    )
+
+                    # Build labels — mask prompt tokens with -100
+                    # so loss is computed only on the target completion
+                    labels = tok_full["input_ids"].clone()
+                    for i, prompt_ids in enumerate(tok_prompt["input_ids"]):
+                        prompt_len = len(prompt_ids)
+                        labels[i, :prompt_len] = -100   # mask prompt
+
                     out  = manager.model(
-                        input_ids=tok["input_ids"],
-                        attention_mask=tok["attention_mask"],
-                        labels=tok["input_ids"],
+                        input_ids=tok_full["input_ids"],
+                        attention_mask=tok_full["attention_mask"],
+                        labels=labels,
                     )
                     loss = out.loss / train_cfg.gradient_accumulation_steps
                     loss.backward()
-
                     n_acc += 1
+
                     if n_acc % train_cfg.gradient_accumulation_steps == 0:
                         torch.nn.utils.clip_grad_norm_(
                             manager.model.parameters(), max_norm=1.0
                         )
-                        # ---------------------------------------------------------
-                        # FIX: Actually update the weights and clear gradients
-                        # ---------------------------------------------------------
-                        optimizer.step()
+                        optimizer.step()    # ← actually update weights
+                        scheduler.step()    # ← adjust learning rate
                         optimizer.zero_grad()
 
                     total += 1
                     if total % train_cfg.logging_steps == 0:
                         elapsed = time.perf_counter() - t0
-                        # Multiply by accum_steps to show true batch loss
-                        display_loss = loss.item() * train_cfg.gradient_accumulation_steps
+                        lr_now  = scheduler.get_last_lr()[0]
                         logger.info(
-                            f"Step {total}/1000 | loss={display_loss:.4f} | "
+                            f"Step {total}/{total_steps} | "
+                            f"loss={loss.item() * train_cfg.gradient_accumulation_steps:.4f} | "
+                            f"lr={lr_now:.2e} | "
                             f"dataset={dataset} | {elapsed:.0f}s elapsed"
                         )
                     if total % train_cfg.save_steps == 0:
@@ -1179,13 +1228,14 @@ def main() -> None:
                             f"{train_cfg.output_dir}/checkpoint-{total}"
                         )
 
-                    del tok, out, loss
+                    del tok_full, tok_prompt, labels, out, loss
                     manager._clear_memory()
 
                 except Exception as e:
                     logger.warning(f"Skipping step {total}: {e}")
                 finally:
-                    texts = []
+                    texts   = []
+                    targets = []
 
         manager.save_adapters(train_cfg.output_dir)
         mins = (time.perf_counter() - t0) / 60
