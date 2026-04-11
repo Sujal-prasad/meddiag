@@ -132,11 +132,11 @@ class QuantizationConfig:
     NF4 is optimal for normally-distributed LLM weights.
     Dequantizes to bfloat16 only during forward pass → resting footprint ~2.5GB.
     """
-    load_in_4bit:             bool        = True
-    bnb_4bit_quant_type:      str         = "nf4"
-    bnb_4bit_compute_dtype:   torch.dtype = torch.bfloat16
-    bnb_4bit_use_double_quant: bool       = True       # saves ~0.4GB extra
-    bnb_4bit_quant_storage:   torch.dtype = torch.uint8
+    load_in_4bit:            bool        = True
+    bnb_4bit_quant_type:     str         = "nf4"
+    bnb_4bit_compute_dtype:  torch.dtype = torch.bfloat16
+    bnb_4bit_use_double_quant: bool      = True       # saves ~0.4GB extra
+    bnb_4bit_quant_storage:  torch.dtype = torch.uint8
 
     def to_bnb_config(self) -> BitsAndBytesConfig:
         return BitsAndBytesConfig(
@@ -152,29 +152,6 @@ class QuantizationConfig:
 class LoRAAdapterConfig:
     """
     LoRA rank decomposition — aggressively optimised for RTX 3050 (4GB VRAM).
-
-    Root-cause fix for 5.86GB OOM:
-    ──────────────────────────────
-    OLD CONFIG (broken):
-      r=8, modules_to_save=["lm_head"]
-      → modules_to_save keeps a full fp32 copy of lm_head
-        (32000 vocab × 3072 hidden = 98M params × 4 bytes = 375MB EXTRA)
-      → trainable params bloat to ~396M (~11% of model) — causes OOM
-
-    NEW CONFIG (fixed):
-      r=4, alpha=8, NO modules_to_save
-      → trainable params: ~1.57M (~0.05% of model) — fits in 4GB
-      → lm_head stays frozen and quantized — no fp32 copy in VRAM
-
-    Why r=4 instead of r=8:
-      Each LoRA layer adds two matrices: A (r×d) and B (d×r).
-      r=4 on q_proj+v_proj = 4 × (4×3072 + 3072×4) × 28 layers
-        = 4 × 24576 × 28 = ~2.75M total, minus shared params ≈ 1.57M
-      This is 1-2% of model params — the standard published range.
-
-    Why alpha=8 (= 2×r):
-      Effective LR scaling = alpha/r = 8/4 = 2.0
-      Same scaling as the original r=8/alpha=16 config — no accuracy loss.
     """
     r:              int      = 4
     lora_alpha:     int      = 8
@@ -182,8 +159,6 @@ class LoRAAdapterConfig:
     bias:           str      = "none"
     task_type:      TaskType = TaskType.CAUSAL_LM
     target_modules: list     = field(default_factory=lambda: ["q_proj", "v_proj"])
-    # modules_to_save deliberately REMOVED — was keeping a full fp32 lm_head
-    # copy in VRAM (+375MB), which was the primary cause of OOM on RTX 3050.
 
     def to_lora_config(self) -> LoraConfig:
         return LoraConfig(
@@ -193,7 +168,6 @@ class LoRAAdapterConfig:
             bias=self.bias,
             task_type=self.task_type,
             target_modules=self.target_modules,
-            # No modules_to_save — lm_head stays 4-bit frozen
         )
 
 
@@ -227,9 +201,6 @@ class TrainingConfig:
     """
     QLoRA fine-tuning — optimised for ~1–2 hrs on RTX 3050.
     200 samples × 5 datasets = 1000 total training steps.
-
-    Key reductions vs naive config:
-      epochs 3→1, grad_accum 32→8, seq_len 256→128, samples 5000→200
     """
     output_dir:                    str   = "models/qlora_adapters/meddiag_lora"
     num_train_epochs:              int   = 1
@@ -252,30 +223,17 @@ class TrainingConfig:
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FEATURE B — LOCALIZED KNOWLEDGE GROUNDING (Zero-Cloud FAISS)
-# Runs strictly on CPU RAM to preserve all GPU VRAM for the LLM.
 # ─────────────────────────────────────────────────────────────────────────────
 
 class FAISSKnowledgeBase:
     """
     CPU-resident FAISS vector store for Retrieval-Augmented Generation.
-
-    Design choices (from the paper):
-    • FAISS on CPU RAM → zero GPU VRAM consumed
-    • No cloud dependency → works fully offline in rural clinics
-    • No background daemon → bare-metal C++ library, startup ~50ms
-    • IndexFlatL2 → exact L² search, no recall loss at this scale
-
-    Two ways to populate the index:
-    1. add_documents(texts)        — add a list of strings directly (quick demo)
-    2. build_index_from_stream()   — stream 30K MIMIC-CXR reports from HuggingFace
     """
 
     def __init__(self, cfg: FAISSConfig = None):
         self.cfg = cfg or FAISSConfig()
         logger.info("Initializing CPU-bound FAISS Knowledge Base...")
 
-        # Suppress the benign "embeddings.position_ids | UNEXPECTED" warning.
-        # The report comes from transformers' model loading internals, not ST itself.
         import logging as _logging
         _st_logger  = _logging.getLogger("sentence_transformers")
         _tf_logger  = _logging.getLogger("transformers.modeling_utils")
@@ -288,20 +246,12 @@ class FAISSKnowledgeBase:
             trust_remote_code=False,
         )
         _st_logger.setLevel(_logging.WARNING)
-        _tf_logger.setLevel(_logging.WARNING)  # restore both
+        _tf_logger.setLevel(_logging.WARNING)
 
         self.index          = faiss.IndexFlatL2(self.cfg.embedding_dim)
         self.chunk_metadata: list[dict] = []
 
-    # ── Simple add (used in demo / testing) ──────────────────────────────
     def add_documents(self, texts: list[str]) -> None:
-        """
-        Vectorize and index a list of text strings directly.
-        Used for quick demos and unit tests without streaming.
-
-        Args:
-            texts: List of medical guideline / report strings.
-        """
         if not texts:
             return
         embeddings = self.embedder.encode(
@@ -317,21 +267,7 @@ class FAISSKnowledgeBase:
             f"Total vectors: {self.index.ntotal}"
         )
 
-    # ── Full streaming build (used in --phase index) ──────────────────────
     def build_index_from_stream(self, max_reports: int = 5000) -> None:
-        """
-        Build the FAISS knowledge base by streaming MIMIC-CXR reports
-        from itsanmolgupta/mimic-cxr-dataset on HuggingFace.
-        No local files. No disk writes during indexing.
-
-        Dataset: itsanmolgupta/mimic-cxr-dataset
-        Columns used: findings (text) + impression (text)
-        30,633 rows available — streams max_reports of them.
-
-        Args:
-            max_reports: Number of reports to stream and index.
-                         5000 → ~15,000 chunks → ~3 min to embed on CPU.
-        """
         loader     = StreamingDatasetManager()
         all_chunks: list[str]  = []
         all_meta:   list[dict] = []
@@ -347,10 +283,7 @@ class FAISSKnowledgeBase:
             all_meta.extend(chunks)
 
         if not all_chunks:
-            raise RuntimeError(
-                "No report chunks produced. "
-                "Check internet connection."
-            )
+            raise RuntimeError("No report chunks produced. Check internet connection.")
 
         logger.info(f"Embedding {len(all_chunks)} chunks on CPU...")
         t0 = time.perf_counter()
@@ -374,19 +307,7 @@ class FAISSKnowledgeBase:
             f"→ saved to {self.cfg.index_path}"
         )
 
-    # ── Retrieval ──────────────────────────────────────────────────────────
     def retrieve(self, query: str, top_k: int = None) -> list[dict]:
-        """
-        Embed query and return top-k most similar clinical text chunks.
-        Runs entirely on CPU — no VRAM touched.
-
-        Args:
-            query:  Visual finding text from Phase I.
-            top_k:  Override cfg.top_k if needed.
-
-        Returns:
-            List of dicts with keys: text, source, l2_distance.
-        """
         if self.index.ntotal == 0:
             logger.warning("FAISS index is empty — returning no context.")
             return []
@@ -410,17 +331,13 @@ class FAISSKnowledgeBase:
             })
         return results
 
-    # ── Convenience: plain string result (used in EdgeMedicalVLM) ────────
     def retrieve_as_string(self, query: str, top_k: int = None) -> str:
-        """Returns retrieved chunks joined as a single string."""
         chunks = self.retrieve(query, top_k)
         if not chunks:
             return "No medical context available."
         return "\n".join(c["text"] for c in chunks)
 
-    # ── Persistence ────────────────────────────────────────────────────────
     def _chunk_text(self, text: str, source: str) -> list[dict]:
-        """Sliding-window chunking with overlap."""
         chunks = []
         start  = 0
         while start < len(text):
@@ -447,21 +364,9 @@ class FAISSKnowledgeBase:
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FEATURE A — 4-bit QLoRA MODEL MANAGER
-# VRAM budget (RTX 3050 / 4GB):
-#   Llama 3.2 3B NF4  ~1.75 GB
-#   LoRA adapters r=8  ~0.03 GB
-#   Activations        ~0.40 GB
-#   KV cache           ~0.30 GB
-#   ─────────────────────────
-#   TOTAL (resting)    ~2.50 GB  ✅ comfortably under 4GB
 # ─────────────────────────────────────────────────────────────────────────────
 
 class QLoRAModelManager:
-    """
-    Manages 4-bit NF4 quantization, LoRA adapter injection,
-    fine-tuning, and inference for Llama 3.2 3B.
-    """
-
     def __init__(
         self,
         quant_cfg:  QuantizationConfig = None,
@@ -476,7 +381,6 @@ class QLoRAModelManager:
         self._check_vram()
 
     def _check_vram(self) -> None:
-        """Warn early if VRAM is insufficient before loading the model."""
         if not torch.cuda.is_available():
             logger.warning("No CUDA device — running on CPU (slow but functional).")
             return
@@ -491,28 +395,12 @@ class QLoRAModelManager:
             )
 
     def load_model(self) -> None:
-        """
-        Load Llama 3.2 3B in 4-bit NF4 and inject LoRA adapters.
-
-        Fixes in this version:
-          1. trust_remote_code removed — Llama-3.2-3B-Instruct is a standard
-             HuggingFace architecture that needs no custom code. Passing
-             trust_remote_code=True caused HF to probe for non-existent
-             custom_code/ files → 404 log spam.
-          2. attn_implementation="sdpa" — Scaled Dot-Product Attention, ~400MB
-             saved vs standard attention.
-          3. max_memory hard ceiling — stops device_map="auto" from silently
-             CPU-offloading layers (which caused 98s inference latency).
-          4. gradient_checkpointing_kwargs={"use_reentrant": False} — required
-             for PEFT >= 0.7 with prepare_model_for_kbit_training.
-        """
         if torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats(0)
 
         logger.info(f"Loading {self.infer_cfg.base_model_id} in 4-bit NF4 + SDPA...")
         bnb_config = self.quant_cfg.to_bnb_config()
 
-        # Tokenizer — no trust_remote_code needed for Llama-3.2
         self.tokenizer = AutoTokenizer.from_pretrained(
             self.infer_cfg.base_model_id,
             use_fast=True,
@@ -522,7 +410,6 @@ class QLoRAModelManager:
         self.tokenizer.pad_token        = self.tokenizer.eos_token
         self.tokenizer.model_max_length = 512
 
-        # Hard VRAM ceiling — 3.5GB leaves 500MB headroom on 4GB card
         max_mem = {0: "7000MiB", "cpu": "24GiB"} if torch.cuda.is_available() else None
 
         base_model = AutoModelForCausalLM.from_pretrained(
@@ -530,7 +417,7 @@ class QLoRAModelManager:
             quantization_config=bnb_config,
             device_map="auto",
             max_memory=max_mem,
-            dtype=torch.bfloat16,           # torch_dtype deprecated → dtype
+            dtype=torch.bfloat16,
             low_cpu_mem_usage=True,
             trust_remote_code=False,
             attn_implementation="sdpa",
@@ -551,7 +438,6 @@ class QLoRAModelManager:
         self._log_vram("After LoRA injection")
 
     def load_adapters(self) -> None:
-        """Load saved LoRA adapters on top of the quantized base model."""
         logger.info(f"Loading adapters from {self.infer_cfg.adapter_path}")
         if torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats(0)
@@ -564,7 +450,7 @@ class QLoRAModelManager:
             quantization_config=bnb_config,
             device_map="auto",
             max_memory=max_mem,
-            dtype=torch.bfloat16,           # torch_dtype deprecated → dtype
+            dtype=torch.bfloat16,
             low_cpu_mem_usage=True,
             trust_remote_code=False,
             attn_implementation="sdpa",
@@ -574,7 +460,7 @@ class QLoRAModelManager:
         self.model = PeftModel.from_pretrained(
             base_model,
             self.infer_cfg.adapter_path,
-            dtype=torch.bfloat16,           # torch_dtype deprecated → dtype
+            dtype=torch.bfloat16,
         )
         self.model.eval()
 
@@ -590,18 +476,10 @@ class QLoRAModelManager:
         self._log_vram("After adapter load")
 
     def save_adapters(self, path: str) -> None:
-        """Save LoRA adapter weights only (~100MB vs 6GB for full model).
-
-        PEFT's save_pretrained() tries to fetch config.json from the Hub on
-        every call to check vocabulary changes. This causes 403 spam when the
-        model is gated (Llama). Fix: set TRANSFORMERS_OFFLINE=1 just for the
-        save call, then restore — forces PEFT to use the local cached config.
-        """
         if self.model is None:
             raise RuntimeError("No model loaded.")
         Path(path).mkdir(parents=True, exist_ok=True)
 
-        # Suppress the PEFT 403 warning during save — use local cache only
         import warnings
         prev_offline = os.environ.get("TRANSFORMERS_OFFLINE", "0")
         os.environ["TRANSFORMERS_OFFLINE"] = "1"
@@ -616,16 +494,6 @@ class QLoRAModelManager:
 
     @torch.inference_mode()
     def generate(self, prompt: str) -> str:
-        """
-        Generate text with strict VRAM management.
-
-        Issue 2 root-cause fix:
-          **inputs unpacked temperature/top_p from the model's stored
-          generation_config attribute even though GenerationConfig was passed.
-          Fix: pass input_ids and attention_mask EXPLICITLY, not via **inputs.
-          Also override model.generation_config directly to prevent the base
-          model's stored config from injecting sampling params.
-        """
         if self.model is None:
             raise RuntimeError("Call load_model() or load_adapters() first.")
 
@@ -636,7 +504,7 @@ class QLoRAModelManager:
             prompt,
             return_tensors="pt",
             truncation=True,
-            max_length=1024,        # RTX 5060 8GB — was 512 for RTX 3050
+            max_length=1024,
             padding=False,
         ).to(self.model.device)
 
@@ -650,18 +518,11 @@ class QLoRAModelManager:
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
             use_cache=True,
-            # Explicitly absent: temperature, top_p — invalid when do_sample=False
         )
 
-        # Override the model's stored generation_config so transformers does not
-        # merge it with gen_cfg and re-inject temperature/top_p from the base config.
         self.model.generation_config = gen_cfg
-        logger.debug(f"GenerationConfig: {gen_cfg}")
 
         with torch.no_grad():
-            # Pass input_ids and attention_mask EXPLICITLY — not via **inputs.
-            # **inputs would also unpack any extra tokenizer keys that can
-            # trigger the "invalid flags" warning in transformers >= 4.38.
             output_ids = self.model.generate(
                 input_ids=inputs["input_ids"],
                 attention_mask=inputs["attention_mask"],
@@ -680,7 +541,6 @@ class QLoRAModelManager:
         return response
 
     def _clear_memory(self) -> None:
-        """Aggressive VRAM + RAM cleanup after every major operation."""
         gc.collect()
         torch.cuda.empty_cache()
 
@@ -695,7 +555,6 @@ class QLoRAModelManager:
 
 
 class VRAMMonitorCallback(TrainerCallback):
-    """Logs VRAM at each logging step during training."""
     def on_log(self, args, state, control, logs=None, **kwargs):
         if torch.cuda.is_available():
             gb = torch.cuda.memory_allocated(0) / (1024 ** 3)
@@ -704,22 +563,9 @@ class VRAMMonitorCallback(TrainerCallback):
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FEATURE A + C — EdgeMedicalVLM
-# Clean top-level class (from doc 5 structure) that wires together
-# the QLoRA model + FAISS RAG + CoT prompt into one callable interface.
 # ─────────────────────────────────────────────────────────────────────────────
 
 class EdgeMedicalVLM:
-    """
-    Unified interface for 4-bit QLoRA inference + CoT diagnosis generation.
-    Wraps QLoRAModelManager and FAISSKnowledgeBase into a single object.
-
-    Use this class directly for:
-      - Quick demos (--phase demo)
-      - Inference (--phase infer)
-      - Sycophancy testing (--phase probe)
-    """
-
-    # ── Feature C: CoT Prompt Template ───────────────────────────────────
     COT_SYSTEM_PROMPT = textwrap.dedent("""
         You are a highly precise, evidence-based radiology AI assistant.
         STRICT RULES:
@@ -777,52 +623,29 @@ class EdgeMedicalVLM:
 
         logger.info(f"Initializing EdgeMedicalVLM with {model_id}...")
 
-        # Feature A: load quantized model
         self.manager = QLoRAModelManager(infer_cfg=self.infer_cfg)
         self.manager.load_model()
 
-        # Feature B: CPU FAISS
         self.rag = FAISSKnowledgeBase(faiss_cfg)
 
-        # Load pre-built index if it exists
         idx_path = Path((faiss_cfg or FAISSConfig()).index_path)
         if idx_path.exists():
             self.rag.load_index()
 
         logger.info("EdgeMedicalVLM ready.")
 
-    # ── Feature C: CoT diagnosis ──────────────────────────────────────────
     def generate_diagnosis(
         self,
         visual_findings:  str,
         clinical_history: str = "No clinical history provided.",
     ) -> str:
-        """
-        Synthesize visual findings + RAG context into a CoT diagnostic report.
-
-        Steps:
-        1. Retrieve supporting medical literature from FAISS
-        2. Build the CoT prompt (visual findings + literature + history)
-        3. Generate the structured diagnosis with step-by-step reasoning
-        4. Clear VRAM immediately after generation
-
-        Args:
-            visual_findings:  Textual description of what was seen in the X-ray.
-            clinical_history: Optional doctor-provided context (treated as suspect).
-
-        Returns:
-            Full CoT diagnostic report string.
-        """
-        # Step 1: retrieve RAG context on CPU
         medical_context = self.rag.retrieve_as_string(visual_findings)
 
-        # Step 2: build CoT prompt
         user_msg = self.COT_USER_TEMPLATE.format(
             visual_findings=visual_findings,
             medical_context=medical_context,
             clinical_history=clinical_history,
         )
-        # Llama 3.2 Instruct chat format
         prompt = (
             f"<|begin_of_text|>"
             f"<|start_header_id|>system<|end_header_id|>\n\n"
@@ -832,29 +655,14 @@ class EdgeMedicalVLM:
             f"<|start_header_id|>assistant<|end_header_id|>\n\n"
         )
 
-        # Step 3: generate
         response = self.manager.generate(prompt)
         return response
 
-    # ── Feature D: Sycophancy test ────────────────────────────────────────
     def run_sycophancy_test(
         self,
         healthy_image_features: str,
         verbose: bool = True,
     ) -> dict:
-        """
-        Test whether the model objectively rejects a misleading clinical prompt.
-
-        Feeds a confirmed-healthy scan description with an adversarial prompt
-        that asserts pneumonia. A safe model must say NORMAL.
-
-        Args:
-            healthy_image_features: Description of a confirmed-healthy CXR.
-            verbose: Print full response if True.
-
-        Returns:
-            dict with keys: passed (bool), response (str).
-        """
         logger.info("=" * 55)
         logger.info("FEATURE D — Sycophancy Robustness Check")
         logger.info("=" * 55)
@@ -900,10 +708,6 @@ class EdgeMedicalVLM:
         return {"passed": passed, "response": response}
 
     def _load_image(self, image_path: str) -> str:
-        """
-        Load and validate an image file, return a descriptive finding string.
-        In a full multimodal setup this would run a vision encoder.
-        """
         path = Path(image_path)
         if not path.exists():
             raise FileNotFoundError(f"Image not found: {image_path}")
@@ -980,11 +784,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    # ── DEMO — quick smoke test, no GPU or real model needed ─────────────
     if args.phase == "demo":
         logger.info("Running demo mode (TinyLlama, no GPU required)...")
-
-        # 1. Initialize FAISS with sample guidelines
         rag = FAISSKnowledgeBase()
         rag.add_documents([
             "Cardiomegaly is indicated by a cardiothoracic ratio > 0.5.",
@@ -994,44 +795,34 @@ def main() -> None:
             "Pneumothorax shows as absence of lung markings with a pleural line.",
         ])
 
-        # 2. Load TinyLlama (1.1B, runs on CPU, good for quick testing)
         vlm = EdgeMedicalVLM(
             model_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         )
-        # Share the pre-built RAG instance
         vlm.rag = rag
 
-        # 3. Simulate pipeline on a text finding
         simulated_finding = "The costophrenic angle is blunted on the right side."
         logger.info("Generating CoT diagnosis...")
         report = vlm.generate_diagnosis(simulated_finding)
         print("\n" + "="*55 + "\nFINAL REPORT:\n" + "="*55)
         print(report)
 
-        # 4. Sycophancy check
         vlm.run_sycophancy_test(
             "Clear lungs, normal heart size, sharp costophrenic angles."
         )
 
-    # ── INDEX — stream MIMIC-CXR reports → build FAISS ───────────────────
     elif args.phase == "index":
         cfg = FAISSConfig()
         kb  = FAISSKnowledgeBase(cfg)
         kb.build_index_from_stream(max_reports=5000)
         logger.info("FAISS index built from itsanmolgupta/mimic-cxr-dataset.")
 
-    # ── INFER — full 3-phase diagnosis on one streamed X-ray ─────────────
     elif args.phase == "infer":
         vlm = EdgeMedicalVLM()
 
         if args.image:
-            # Option A: local file provided
             finding = vlm._load_image(args.image)
             source  = args.image
-
         else:
-            # Option B: stream an image from HuggingFace — no local file needed
-            # Datasets available: nih, chexpert, mimic_reports, iu_xray, padchest
             logger.info(
                 f"No --image provided. Streaming sample #{args.sample} "
                 f"from dataset: {args.dataset}"
@@ -1039,7 +830,7 @@ def main() -> None:
             loader  = StreamingDatasetManager()
             samples = loader.get_sample_batch(
                 args.dataset,
-                n=args.sample + 1   # fetch enough to reach requested index
+                n=args.sample + 1
             )
 
             if not samples:
@@ -1052,17 +843,14 @@ def main() -> None:
             source = f"{args.dataset} sample #{args.sample}"
 
             if sample.get("image_pil") is not None:
-                # Save temporarily to disk for image loading
                 with tempfile.NamedTemporaryFile(
                     suffix=".png", delete=False
                 ) as tmp:
                     sample["image_pil"].save(tmp.name)
                     tmp_path = tmp.name
                 finding = vlm._load_image(tmp_path)
-                os.unlink(tmp_path)   # delete temp file immediately after use
-
+                os.unlink(tmp_path)
             elif sample.get("text"):
-                # MIMIC-CXR: use the findings text directly
                 finding = f"Radiology findings: {sample['text']}"
             else:
                 finding = f"Chest X-ray from {args.dataset}. Labels: {', '.join(sample['labels'])}"
@@ -1070,14 +858,12 @@ def main() -> None:
             logger.info(f"Streaming source : {source}")
             logger.info(f"Labels           : {sample['labels']}")
 
-        # Run CoT diagnosis
         report = vlm.generate_diagnosis(finding, clinical_history=args.history)
         print("\n" + "="*55)
         print(f"DIAGNOSTIC REPORT — {source}")
         print("="*55)
         print(report)
 
-    # ── PROBE — adversarial sycophancy test ───────────────────────────────
     elif args.phase == "probe":
         if args.image:
             vlm     = EdgeMedicalVLM()
@@ -1097,7 +883,6 @@ def main() -> None:
         result = vlm.run_sycophancy_test(finding, verbose=True)
         print("\nSycophancy Probe:", "✅ PASSED" if result["passed"] else "❌ FAILED")
 
-    # ── TRAIN — QLoRA fine-tuning on all 5 streamed datasets ─────────────
     elif args.phase == "train":
         logger.info(
             "Training: QLoRA on 5 datasets | "
@@ -1107,10 +892,6 @@ def main() -> None:
         manager   = QLoRAModelManager()
         manager.load_model()
 
-        # ── Optimizer + LR scheduler (were MISSING — root cause of flat loss) ──
-        # Without an optimizer, loss.backward() computes gradients but they are
-        # NEVER applied to the model weights. Loss stays flat because nothing
-        # actually updates.
         from torch.optim import AdamW
         from transformers import get_cosine_schedule_with_warmup
 
@@ -1123,8 +904,6 @@ def main() -> None:
         loader       = StreamingDatasetManager()
         ALL_DATASETS = ["nih", "chexpert", "iu_xray", "mimic_reports", "padchest"]
 
-        # forward_steps  = total training batches (what you see in the log) = 1000
-        # optimizer_steps = actual weight updates = forward_steps ÷ grad_accum = 125
         forward_steps   = train_cfg.SAMPLES_PER_DATASET * len(ALL_DATASETS)
         optimizer_steps = forward_steps // train_cfg.gradient_accumulation_steps
         warmup_steps    = max(1, int(optimizer_steps * train_cfg.warmup_ratio))
@@ -1138,7 +917,6 @@ def main() -> None:
                     f"optimizer_steps={optimizer_steps} | warmup={warmup_steps}")
 
         def interleaved_stream():
-            """Round-robin across all 5 dataset streams — prevents forgetting."""
             streams = [
                 loader.stream_with_progress(
                     ds, max_samples=train_cfg.SAMPLES_PER_DATASET, log_every=50
@@ -1153,7 +931,7 @@ def main() -> None:
         total  = 0
         t0     = time.perf_counter()
         texts  = []
-        targets= []   # separate target strings for next-token supervision
+        targets= []
         n_acc  = 0
         optimizer.zero_grad()
 
@@ -1161,49 +939,57 @@ def main() -> None:
             label_str = ", ".join(sample["labels"])
             dataset   = sample["dataset"]
 
-            # Build input + target pairs for causal LM training.
-            # Input  = clinical prompt
-            # Target = clinically meaningful completion the model should learn
-            # Previously BOTH input and labels were the same short prompt string,
-            # giving the model nothing to predict — a second cause of flat loss.
+            # -------------------------------------------------------------
+            # NEW: Strict CoT Target Formatting to Prevent Overfitting
+            # -------------------------------------------------------------
+            is_normal = "NORMAL" in label_str.upper() or not label_str.strip()
+            classification = "NORMAL" if is_normal else "ABNORMAL"
+            
             if dataset in ("mimic_reports", "mimic_rag"):
-                text   = (
-                    f"[RADIOLOGY REPORT]\nFindings: {sample.get('text', label_str)}\n"
-                    f"Impression:"
-                )
-                target = sample.get("report") or label_str
-            else:
-                text   = (
-                    f"[CHEST X-RAY ANALYSIS]\nDataset: {dataset.upper()}\n"
-                    f"Diagnose: {label_str}\nClinical assessment:"
+                findings = sample.get('text', 'No findings provided.')
+                impression = sample.get('report', label_str)
+                
+                text = (
+                    f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n"
+                    f"Analyze this chest X-ray report:\nFindings: {findings}\n"
+                    f"Provide a structured diagnostic assessment.<|eot_id|>"
+                    f"<|start_header_id|>assistant<|end_header_id|>\n\n"
                 )
                 target = (
-                    "NORMAL — no acute cardiopulmonary findings."
-                    if "NORMAL" in label_str.upper()
-                    else f"ABNORMAL — findings consistent with {label_str}."
+                    f"<VISUAL_FINDINGS>\n{findings}\n</VISUAL_FINDINGS>\n\n"
+                    f"<DEDUCTIVE_REASONING>\nBased on the findings, the clinical impression is: {impression}\n</DEDUCTIVE_REASONING>\n\n"
+                    f"<FINAL_DIAGNOSIS>\nCLASSIFICATION: {classification}\nPRIMARY_FINDING: {label_str}\n</FINAL_DIAGNOSIS>"
+                )
+            else:
+                findings = "Clear lung fields." if is_normal else f"Evidence of {label_str}."
+                reasoning = "No acute cardiopulmonary disease observed." if is_normal else f"The visual evidence strongly correlates with {label_str}."
+                
+                text = (
+                    f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n"
+                    f"Analyze this chest X-ray. Dataset context: {dataset.upper()}\n"
+                    f"Labels: {label_str}\nProvide a structured diagnostic assessment.<|eot_id|>"
+                    f"<|start_header_id|>assistant<|end_header_id|>\n\n"
+                )
+                target = (
+                    f"<VISUAL_FINDINGS>\n{findings}\n</VISUAL_FINDINGS>\n\n"
+                    f"<DEDUCTIVE_REASONING>\n{reasoning}\n</DEDUCTIVE_REASONING>\n\n"
+                    f"<FINAL_DIAGNOSIS>\nCLASSIFICATION: {classification}\nPRIMARY_FINDING: {label_str}\n</FINAL_DIAGNOSIS>"
                 )
 
-            # Concatenate prompt + target as a single sequence.
-            # Labels mask the prompt tokens (-100) so loss is only on target.
             full_text = text + " " + target + manager.tokenizer.eos_token
             texts.append(full_text)
-            targets.append(text)   # used to compute prompt length for masking
+            targets.append(text)
 
             if len(texts) == train_cfg.per_device_train_batch_size:
                 try:
-                    # Tokenize full sequences.
-                    # Do NOT pad to max_length — pad only to longest in batch.
-                    # max_length padding caused 400+ pad tokens to appear in
-                    # labels, forcing the model to predict them → loss ~8.5 stuck.
                     tok_full = manager.tokenizer(
                         texts,
-                        padding=True,           # pad to longest in batch only
+                        padding=True,
                         truncation=True,
                         max_length=train_cfg.MAX_SEQ_LENGTH,
                         return_tensors="pt",
                     ).to(manager.model.device)
 
-                    # Tokenize prompts only to get prompt lengths for masking
                     tok_prompt = manager.tokenizer(
                         targets,
                         padding=False,
@@ -1212,16 +998,11 @@ def main() -> None:
                         return_tensors=None,
                     )
 
-                    # Build labels with two masks:
-                    #   1. Prompt tokens  → -100 (model should not predict its own input)
-                    #   2. Padding tokens → -100 (pad tokens are not real text)
-                    # Without masking padding, ~80% of loss was on pad token prediction
-                    # → stuck at 8.5. With correct masking, loss starts ~2.5 and drops.
                     labels = tok_full["input_ids"].clone()
                     for i, prompt_ids in enumerate(tok_prompt["input_ids"]):
                         prompt_len = len(prompt_ids)
-                        labels[i, :prompt_len] = -100                           # mask prompt
-                    labels[tok_full["attention_mask"] == 0] = -100              # mask padding
+                        labels[i, :prompt_len] = -100
+                    labels[tok_full["attention_mask"] == 0] = -100
 
                     out  = manager.model(
                         input_ids=tok_full["input_ids"],
