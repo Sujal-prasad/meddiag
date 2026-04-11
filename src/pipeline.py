@@ -590,12 +590,28 @@ class QLoRAModelManager:
         self._log_vram("After adapter load")
 
     def save_adapters(self, path: str) -> None:
-        """Save LoRA adapter weights only (~100MB vs 6GB for full model)."""
+        """Save LoRA adapter weights only (~100MB vs 6GB for full model).
+
+        PEFT's save_pretrained() tries to fetch config.json from the Hub on
+        every call to check vocabulary changes. This causes 403 spam when the
+        model is gated (Llama). Fix: set TRANSFORMERS_OFFLINE=1 just for the
+        save call, then restore — forces PEFT to use the local cached config.
+        """
         if self.model is None:
             raise RuntimeError("No model loaded.")
         Path(path).mkdir(parents=True, exist_ok=True)
-        self.model.save_pretrained(path)
-        self.tokenizer.save_pretrained(path)
+
+        # Suppress the PEFT 403 warning during save — use local cache only
+        import warnings
+        prev_offline = os.environ.get("TRANSFORMERS_OFFLINE", "0")
+        os.environ["TRANSFORMERS_OFFLINE"] = "1"
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message=".*Unable to fetch remote file.*")
+            warnings.filterwarnings("ignore", message=".*Could not find a config file.*")
+            self.model.save_pretrained(path)
+            self.tokenizer.save_pretrained(path)
+        os.environ["TRANSFORMERS_OFFLINE"] = prev_offline
+
         logger.info(f"Adapters saved to {path}")
 
     @torch.inference_mode()
@@ -1104,18 +1120,22 @@ def main() -> None:
             weight_decay=0.01,
             betas=(0.9, 0.95),
         )
-        total_steps   = (train_cfg.SAMPLES_PER_DATASET * 5) // train_cfg.gradient_accumulation_steps
-        warmup_steps  = max(1, int(total_steps * train_cfg.warmup_ratio))
+        loader       = StreamingDatasetManager()
+        ALL_DATASETS = ["nih", "chexpert", "iu_xray", "mimic_reports", "padchest"]
+
+        # forward_steps  = total training batches (what you see in the log) = 1000
+        # optimizer_steps = actual weight updates = forward_steps ÷ grad_accum = 125
+        forward_steps   = train_cfg.SAMPLES_PER_DATASET * len(ALL_DATASETS)
+        optimizer_steps = forward_steps // train_cfg.gradient_accumulation_steps
+        warmup_steps    = max(1, int(optimizer_steps * train_cfg.warmup_ratio))
         scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,
-            num_training_steps=total_steps,
+            num_training_steps=optimizer_steps,
         )
         logger.info(f"Optimizer ready | lr={train_cfg.learning_rate} | "
-                    f"total_steps={total_steps} | warmup={warmup_steps}")
-
-        loader       = StreamingDatasetManager()
-        ALL_DATASETS = ["nih", "chexpert", "iu_xray", "mimic_reports", "padchest"]
+                    f"forward_steps={forward_steps} | "
+                    f"optimizer_steps={optimizer_steps} | warmup={warmup_steps}")
 
         def interleaved_stream():
             """Round-robin across all 5 dataset streams — prevents forgetting."""
@@ -1171,16 +1191,19 @@ def main() -> None:
 
             if len(texts) == train_cfg.per_device_train_batch_size:
                 try:
-                    # Tokenize full sequences
+                    # Tokenize full sequences.
+                    # Do NOT pad to max_length — pad only to longest in batch.
+                    # max_length padding caused 400+ pad tokens to appear in
+                    # labels, forcing the model to predict them → loss ~8.5 stuck.
                     tok_full = manager.tokenizer(
                         texts,
-                        padding="max_length",
+                        padding=True,           # pad to longest in batch only
                         truncation=True,
                         max_length=train_cfg.MAX_SEQ_LENGTH,
                         return_tensors="pt",
                     ).to(manager.model.device)
 
-                    # Tokenize prompts only to get lengths for masking
+                    # Tokenize prompts only to get prompt lengths for masking
                     tok_prompt = manager.tokenizer(
                         targets,
                         padding=False,
@@ -1189,12 +1212,16 @@ def main() -> None:
                         return_tensors=None,
                     )
 
-                    # Build labels — mask prompt tokens with -100
-                    # so loss is computed only on the target completion
+                    # Build labels with two masks:
+                    #   1. Prompt tokens  → -100 (model should not predict its own input)
+                    #   2. Padding tokens → -100 (pad tokens are not real text)
+                    # Without masking padding, ~80% of loss was on pad token prediction
+                    # → stuck at 8.5. With correct masking, loss starts ~2.5 and drops.
                     labels = tok_full["input_ids"].clone()
                     for i, prompt_ids in enumerate(tok_prompt["input_ids"]):
                         prompt_len = len(prompt_ids)
-                        labels[i, :prompt_len] = -100   # mask prompt
+                        labels[i, :prompt_len] = -100                           # mask prompt
+                    labels[tok_full["attention_mask"] == 0] = -100              # mask padding
 
                     out  = manager.model(
                         input_ids=tok_full["input_ids"],
@@ -1209,8 +1236,8 @@ def main() -> None:
                         torch.nn.utils.clip_grad_norm_(
                             manager.model.parameters(), max_norm=1.0
                         )
-                        optimizer.step()    # ← actually update weights
-                        scheduler.step()    # ← adjust learning rate
+                        optimizer.step()
+                        scheduler.step()
                         optimizer.zero_grad()
 
                     total += 1
@@ -1218,7 +1245,7 @@ def main() -> None:
                         elapsed = time.perf_counter() - t0
                         lr_now  = scheduler.get_last_lr()[0]
                         logger.info(
-                            f"Step {total}/{total_steps} | "
+                            f"Step {total}/{forward_steps} | "
                             f"loss={loss.item() * train_cfg.gradient_accumulation_steps:.4f} | "
                             f"lr={lr_now:.2e} | "
                             f"dataset={dataset} | {elapsed:.0f}s elapsed"
