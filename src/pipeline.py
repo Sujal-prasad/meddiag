@@ -132,11 +132,11 @@ class QuantizationConfig:
     NF4 is optimal for normally-distributed LLM weights.
     Dequantizes to bfloat16 only during forward pass → resting footprint ~2.5GB.
     """
-    load_in_4bit:             bool        = True
-    bnb_4bit_quant_type:      str         = "nf4"
-    bnb_4bit_compute_dtype:   torch.dtype = torch.bfloat16
-    bnb_4bit_use_double_quant: bool       = True       # saves ~0.4GB extra
-    bnb_4bit_quant_storage:   torch.dtype = torch.uint8
+    load_in_4bit:            bool        = True
+    bnb_4bit_quant_type:     str         = "nf4"
+    bnb_4bit_compute_dtype:  torch.dtype = torch.bfloat16
+    bnb_4bit_use_double_quant: bool      = True       # saves ~0.4GB extra
+    bnb_4bit_quant_storage:  torch.dtype = torch.uint8
 
     def to_bnb_config(self) -> BitsAndBytesConfig:
         return BitsAndBytesConfig(
@@ -746,7 +746,7 @@ class EdgeMedicalVLM:
         CLASSIFICATION: [NORMAL | ABNORMAL]
         PRIMARY_FINDING: [Most significant observation]
         CONFIDENCE: [HIGH | MEDIUM | LOW]
-        RECOMMENDATION: [Suggested clinical action]
+        RECOMMATION: [Suggested clinical action]
         </FINAL_DIAGNOSIS>
     """).strip()
 
@@ -1091,6 +1091,13 @@ def main() -> None:
         manager   = QLoRAModelManager()
         manager.load_model()
 
+        # ---------------------------------------------------------
+        # FIX: Instantiate the Optimizer (only for trainable LoRA params)
+        # ---------------------------------------------------------
+        trainable_params = [p for p in manager.model.parameters() if p.requires_grad]
+        optimizer = torch.optim.AdamW(trainable_params, lr=train_cfg.learning_rate)
+        optimizer.zero_grad()
+
         loader      = StreamingDatasetManager()
         ALL_DATASETS = ["nih", "chexpert", "iu_xray", "mimic_reports", "padchest"]
 
@@ -1152,12 +1159,19 @@ def main() -> None:
                         torch.nn.utils.clip_grad_norm_(
                             manager.model.parameters(), max_norm=1.0
                         )
+                        # ---------------------------------------------------------
+                        # FIX: Actually update the weights and clear gradients
+                        # ---------------------------------------------------------
+                        optimizer.step()
+                        optimizer.zero_grad()
 
                     total += 1
                     if total % train_cfg.logging_steps == 0:
                         elapsed = time.perf_counter() - t0
+                        # Multiply by accum_steps to show true batch loss
+                        display_loss = loss.item() * train_cfg.gradient_accumulation_steps
                         logger.info(
-                            f"Step {total}/1000 | loss={loss.item():.4f} | "
+                            f"Step {total}/1000 | loss={display_loss:.4f} | "
                             f"dataset={dataset} | {elapsed:.0f}s elapsed"
                         )
                     if total % train_cfg.save_steps == 0:
