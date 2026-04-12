@@ -1137,48 +1137,40 @@ def main() -> None:
                     f"forward_steps={forward_steps} | "
                     f"optimizer_steps={optimizer_steps} | warmup={warmup_steps}")
 
-        # ── True HF interleaved streaming ─────────────────────────────────────
-        # Replaces the old manual itertools.zip_longest round-robin, which was
-        # causing catastrophic forgetting: zip_longest served all 200 nih samples,
-        # then all 200 chexpert samples, etc. — sequential, not interleaved.
-        # datasets.interleave_datasets() does stochastic mixing at the HF level:
-        # each step it samples from dataset i with probability p[i].
-        # stopping_strategy="all_exhausted" continues until every dataset's
-        # 200 samples are consumed → exactly 1000 total steps.
+        # ── Pre-fetch ALL training samples into RAM before training starts ──────
+        # WHY: streaming from HuggingFace during a GPU training loop causes
+        # read timeouts. A forward+backward pass takes ~4s on RTX 3050.
+        # During those 4s the HF HTTP connection sits idle; after ~3 min the
+        # CDN closes it → "The read operation timed out".
+        # interleave_datasets made it worse by holding 5 connections open at once.
+        #
+        # FIX: fetch all 1000 samples (200 × 5 datasets, text only, no images)
+        # into a Python list BEFORE training. ~2 MB RAM. Zero network dependency
+        # during the actual GPU loop. Shuffle once with seed=42 for true mixing.
 
-        def _make_processed_gen(ds_name: str):
-            """
-            Thin generator that wraps loader.stream() and normalises every
-            sample to a fixed schema {dataset, labels, text, report}.
-            Passed to IterableDataset.from_generator so HF can interleave it.
-            """
+        logger.info("Pre-fetching all training samples into RAM (one-time, ~2 min)...")
+        all_train_samples: list[dict] = []
+        for ds_name in ALL_DATASETS:
+            ds_samples = []
             for s in loader.stream(ds_name,
                                    max_samples=train_cfg.SAMPLES_PER_DATASET):
-                yield {
+                ds_samples.append({
                     "dataset": s["dataset"],
                     "labels":  s.get("labels", []),
                     "text":    s.get("text",   "") or "",
                     "report":  s.get("report", "") or "",
-                }
+                })
+            all_train_samples.extend(ds_samples)
+            logger.info(f"  [{ds_name}] fetched {len(ds_samples)} samples")
 
-        # Build one IterableDataset per source dataset, then interleave them.
-        # lambda default-arg (name=ds) captures the loop variable correctly.
-        processed_streams = [
-            _datasets.IterableDataset.from_generator(
-                lambda name=ds: _make_processed_gen(name)
-            )
-            for ds in ALL_DATASETS
-        ]
-
-        interleaved_hf = _datasets.interleave_datasets(
-            processed_streams,
-            probabilities=[0.2, 0.2, 0.2, 0.2, 0.2],   # equal mixing
-            stopping_strategy="all_exhausted",            # run all 5×200=1000 steps
-            seed=42,
-        )
+        # Shuffle to get true random interleaving — no sequential bias
+        import random as _random
+        _random.seed(42)
+        _random.shuffle(all_train_samples)
+        forward_steps = len(all_train_samples)   # recompute from actual fetch count
         logger.info(
-            "Interleaving 5 datasets via HF interleave_datasets "
-            "(p=0.2 each, seed=42, all_exhausted)"
+            f"Pre-fetch complete: {forward_steps} samples across {len(ALL_DATASETS)} datasets. "
+            f"Training offline from RAM — no further network calls."
         )
 
         total   = 0
@@ -1188,7 +1180,7 @@ def main() -> None:
         n_acc   = 0
         optimizer.zero_grad()
 
-        for sample in interleaved_hf:
+        for sample in all_train_samples:
             label_str = ", ".join(sample["labels"])
             dataset   = sample["dataset"]
 
