@@ -107,9 +107,6 @@ logging.basicConfig(
 logger = logging.getLogger("Pipeline")
 
 # ── Suppress noisy third-party library logs ───────────────────────────────────
-# WARNING level: suppresses HTTP 404 probe spam and repetitive progress lines
-# but PRESERVES auth failures, failed downloads, and real warnings.
-# Do NOT use ERROR here — that would hide legitimate download issues.
 import transformers
 import datasets as _datasets
 transformers.logging.set_verbosity_warning()
@@ -122,16 +119,10 @@ logging.getLogger("huggingface_hub").setLevel(logging.WARNING)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIGURATION DATACLASSES
-# All hyperparameters in one place — makes ablation studies trivial.
 # ─────────────────────────────────────────────────────────────────────────────
 
 @dataclass
 class QuantizationConfig:
-    """
-    4-bit NF4 quantization for BitsAndBytes.
-    NF4 is optimal for normally-distributed LLM weights.
-    Dequantizes to bfloat16 only during forward pass → resting footprint ~2.5GB.
-    """
     load_in_4bit:            bool        = True
     bnb_4bit_quant_type:     str         = "nf4"
     bnb_4bit_compute_dtype:  torch.dtype = torch.bfloat16
@@ -147,12 +138,8 @@ class QuantizationConfig:
             bnb_4bit_quant_storage=self.bnb_4bit_quant_storage,
         )
 
-
 @dataclass
 class LoRAAdapterConfig:
-    """
-    LoRA rank decomposition — aggressively optimised for RTX 3050 (4GB VRAM).
-    """
     r:              int      = 4
     lora_alpha:     int      = 8
     lora_dropout:   float    = 0.05
@@ -170,10 +157,8 @@ class LoRAAdapterConfig:
             target_modules=self.target_modules,
         )
 
-
 @dataclass
 class FAISSConfig:
-    """CPU-bound FAISS vector store — zero GPU VRAM consumed."""
     embedding_model: str   = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_dim:   int   = 384
     top_k:           int   = 3
@@ -183,25 +168,18 @@ class FAISSConfig:
     chunk_overlap:   int   = 64
     device:          str   = "cpu"
 
-
 @dataclass
 class InferenceConfig:
-    """Language model generation parameters."""
     base_model_id:      str   = "meta-llama/Llama-3.2-3B-Instruct"
     adapter_path:       str   = "models/qlora_adapters/meddiag_lora"
-    max_new_tokens:     int   = 256
+    max_new_tokens:     int   = 512    # Bumped from 256 to allow full CoT output
     temperature:        float = 0.1
     top_p:              float = 0.9
     repetition_penalty: float = 1.15
-    vram_limit_gb:      float = 8.0    # RTX 5060 8GB (was 4.0 for RTX 3050)
-
+    vram_limit_gb:      float = 8.0    # RTX 5060 8GB
 
 @dataclass
 class TrainingConfig:
-    """
-    QLoRA fine-tuning — optimised for ~1–2 hrs on RTX 3050.
-    200 samples × 5 datasets = 1000 total training steps.
-    """
     output_dir:                    str   = "models/qlora_adapters/meddiag_lora"
     num_train_epochs:              int   = 1
     per_device_train_batch_size:   int   = 1
@@ -214,11 +192,11 @@ class TrainingConfig:
     logging_steps:                 int   = 5
     save_steps:                    int   = 100
     save_total_limit:              int   = 2
-    dataloader_num_workers:        int   = 0    # 0 = Windows-safe
+    dataloader_num_workers:        int   = 0
     report_to:                     str   = "none"
     gradient_checkpointing:        bool  = True
     SAMPLES_PER_DATASET:           int   = 200
-    MAX_SEQ_LENGTH:                int   = 512   # matches inference max_length
+    MAX_SEQ_LENGTH:                int   = 512
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -226,10 +204,6 @@ class TrainingConfig:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class FAISSKnowledgeBase:
-    """
-    CPU-resident FAISS vector store for Retrieval-Augmented Generation.
-    """
-
     def __init__(self, cfg: FAISSConfig = None):
         self.cfg = cfg or FAISSConfig()
         logger.info("Initializing CPU-bound FAISS Knowledge Base...")
@@ -624,7 +598,15 @@ class EdgeMedicalVLM:
         logger.info(f"Initializing EdgeMedicalVLM with {model_id}...")
 
         self.manager = QLoRAModelManager(infer_cfg=self.infer_cfg)
-        self.manager.load_model()
+        
+        # ---------------------------------------------------------
+        # THE FIX: Load trained adapters if they exist on disk!
+        # ---------------------------------------------------------
+        if Path(self.infer_cfg.adapter_path).exists() and "TinyLlama" not in model_id:
+            self.manager.load_adapters()
+        else:
+            self.manager.load_model()
+        # ---------------------------------------------------------
 
         self.rag = FAISSKnowledgeBase(faiss_cfg)
 
@@ -940,7 +922,7 @@ def main() -> None:
             dataset   = sample["dataset"]
 
             # -------------------------------------------------------------
-            # NEW: Strict CoT Target Formatting to Prevent Overfitting
+            # Strict CoT Target Formatting to Prevent Overfitting
             # -------------------------------------------------------------
             is_normal = "NORMAL" in label_str.upper() or not label_str.strip()
             classification = "NORMAL" if is_normal else "ABNORMAL"

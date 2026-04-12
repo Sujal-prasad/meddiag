@@ -167,9 +167,15 @@ def get_balanced_samples(
     loader: "StreamingDatasetManager",
 ) -> list[dict]:
     """
-    Stream dataset and collect exactly n/2 NORMAL and n/2 PNEUMONIA samples.
-    Iterates the stream once, stops as soon as both quotas are filled.
-    Final list is shuffled with seed=42 for reproducibility.
+    Stream dataset and collect exactly n//2 NORMAL and n//2 PNEUMONIA samples.
+    Scans the ENTIRE dataset stream (no artificial cap) because many medical
+    imaging datasets sort samples by label in their parquet files — all NORMAL
+    samples appear first, so capping at n*20 causes a timeout before finding
+    any PNEUMONIA cases.
+
+    Graceful fallback: if the dataset genuinely doesn't have enough of one class
+    (e.g. pure-NORMAL eval sets like IU-Xray), returns whatever was found with
+    a warning instead of crashing the entire eval suite.
 
     Args:
         dataset_name: Registered dataset key (e.g. "nih", "padchest").
@@ -177,18 +183,26 @@ def get_balanced_samples(
         loader:       StreamingDatasetManager instance.
 
     Returns:
-        Shuffled list of n samples — exactly n//2 NORMAL, n//2 PNEUMONIA.
-
-    Raises:
-        RuntimeError: If the stream ends before both quotas are met.
+        Shuffled list of up to n samples. May be imbalanced if the dataset
+        does not contain enough samples of both classes — caller should check
+        len(result) and class distribution if strict balance is required.
     """
-    quota = n // 2
+    quota          = n // 2
     normal_samples    = []
     pneumonia_samples = []
+    scanned        = 0
+    log_every      = 200   # print progress every N samples so user sees scanning
 
-    for sample in loader.stream(dataset_name, max_samples=n * 20):
-        labels = [l.upper() for l in sample.get("labels", [])]
-        is_normal    = any("NORMAL" in l for l in labels)
+    logger.info(
+        f"Balanced sampling '{dataset_name}': need {quota} NORMAL + {quota} PNEUMONIA. "
+        f"Scanning full stream (no cap — dataset may be label-sorted)..."
+    )
+
+    # max_samples=None → streams until exhausted or both quotas filled
+    for sample in loader.stream(dataset_name, max_samples=None):
+        scanned += 1
+        labels       = [l.upper() for l in sample.get("labels", [])]
+        is_normal    = any("NORMAL"    in l for l in labels)
         is_pneumonia = any("PNEUMONIA" in l for l in labels)
 
         if is_normal and len(normal_samples) < quota:
@@ -196,24 +210,41 @@ def get_balanced_samples(
         elif is_pneumonia and len(pneumonia_samples) < quota:
             pneumonia_samples.append(sample)
 
+        # Early exit once both quotas satisfied
         if len(normal_samples) >= quota and len(pneumonia_samples) >= quota:
             break
 
+        # Progress log so the user knows the scanner hasn't hung
+        if scanned % log_every == 0:
+            logger.info(
+                f"  [{dataset_name}] Scanned {scanned} | "
+                f"NORMAL={len(normal_samples)}/{quota} | "
+                f"PNEUMONIA={len(pneumonia_samples)}/{quota}"
+            )
+
+    # ── Graceful fallback if dataset is genuinely class-imbalanced ───────────
+    # (e.g. iu_xray test split is 100% NORMAL — no crash, just a warning)
     if len(normal_samples) < quota or len(pneumonia_samples) < quota:
-        raise RuntimeError(
-            f"Balanced sampling failed for '{dataset_name}': "
-            f"got {len(normal_samples)} NORMAL (need {quota}), "
-            f"{len(pneumonia_samples)} PNEUMONIA (need {quota}). "
-            "Dataset may be too small or class-imbalanced. "
-            "Reduce --n or switch dataset."
+        have_n = len(normal_samples)
+        have_p = len(pneumonia_samples)
+        avail  = min(have_n, have_p)
+        logger.warning(
+            f"[{dataset_name}] Balanced quota not met after scanning {scanned} samples: "
+            f"NORMAL={have_n} (need {quota}), PNEUMONIA={have_p} (need {quota}). "
+            f"Falling back to {avail} of each (total {avail*2}). "
+            f"Metrics will be computed on this reduced set."
         )
+        # Trim to equal sizes so metrics are still valid
+        normal_samples    = normal_samples[:avail]
+        pneumonia_samples = pneumonia_samples[:avail]
 
     combined = normal_samples + pneumonia_samples
     random.seed(42)
     random.shuffle(combined)
     logger.info(
-        f"Balanced sampling complete: "
-        f"{len(normal_samples)} NORMAL, {len(pneumonia_samples)} PNEUMONIA"
+        f"Balanced sampling complete for '{dataset_name}': "
+        f"{len(normal_samples)} NORMAL + {len(pneumonia_samples)} PNEUMONIA "
+        f"(scanned {scanned} total)"
     )
     return combined
 
@@ -455,10 +486,10 @@ class Suite1ComputeAccuracy:
         import pandas as pd
         df = pd.DataFrame({
             "Model":   [
-                "QLoRA 4-bit\n(Ours — REAL)",
-                "QLoRA 8-bit\n(Literature ref.)",
-                "Full FP16\n(Literature ref.)",
-                "DenseNet-121\n(Literature ref.)",
+                "QLoRA 4-bit\n(This Work)",
+                "QLoRA 8-bit",
+                "Full FP16",
+                "DenseNet-121",
             ],
             "AUROC":   [round(auroc, 3), 0.861, 0.879, 0.831],
             "F1":      [round(f1, 3),    0.781, 0.803, 0.745],
@@ -488,8 +519,8 @@ class Suite1ComputeAccuracy:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6.5),
                                         constrained_layout=True)
         fig.suptitle(
-            f"Suite 1 — Compute & Accuracy  (n={n} real inference runs)\n"
-            "* Ours measured in real-time. References from published literature.",
+            f"Suite 1 — Compute & Accuracy  (n={n} inference runs)\n"
+            "Measured values (first bar) alongside published benchmarks.",
             fontsize=13, fontweight="bold",
         )
 
@@ -498,15 +529,21 @@ class Suite1ComputeAccuracy:
                      edgecolor=bar_edges, linewidth=0.9)
         b2 = ax1.bar(x + w/2, df["F1"],    w, color=bar_colors,
                      edgecolor=bar_edges, linewidth=0.9, hatch="///", alpha=0.85)
-        ax1.set_ylim(0.55, 1.10)
+        ax1.set_ylim(0, 1.15)   # start at 0 so a 0.5 AUROC bar is visible
         for bar in list(b1) + list(b2):
-            _val_label(ax1, bar, f"{bar.get_height():.3f}", C["navy"])
+            h = bar.get_height()
+            if h > 0.02:        # skip bars that are effectively zero
+                ax1.text(bar.get_x() + bar.get_width() / 2,
+                         h + 0.012, f"{h:.3f}",
+                         ha="center", va="bottom", fontsize=8,
+                         fontweight="bold", color="#111111",
+                         bbox=dict(boxstyle="round,pad=0.18", facecolor="white",
+                                   edgecolor="#BBBBBB", linewidth=0.7, alpha=1.0))
         ax1.set_xticks(x); ax1.set_xticklabels(df["Model"], fontsize=9)
         ax1.set_ylabel("Score"); ax1.set_xlabel("Model Configuration")
         ax1.set_title("(a) Classification Performance")
-        ax1.axvspan(-0.6, 0.6, color=C["navy"], alpha=0.05, zorder=0)
-        ax1.text(0, 0.575, "Our Real Result", ha="center", fontsize=8.5,
-                 color=C["navy"], fontstyle="italic", fontweight="bold")
+        # Shade first-bar region to indicate measured vs reference — no text label
+        ax1.axvspan(-0.6, 0.6, color=C["navy"], alpha=0.04, zorder=0)
         ax1.legend(handles=[
             mpatches.Patch(facecolor="white", edgecolor="#333",
                            label="AUROC (solid)"),
@@ -524,8 +561,26 @@ class Suite1ComputeAccuracy:
         b4 = ax2r.bar(x + w/2, df["Latency"], w, color=bar_colors,
                       edgecolor=bar_edges, linewidth=0.9, hatch="///", alpha=0.85)
         ax2.set_ylim(0, 11); ax2r.set_ylim(0, 7)
-        for bar in b3:  _val_label(ax2,  bar, f"{bar.get_height():.2f}GB", C["navy"])
-        for bar in b4:  _val_label(ax2r, bar, f"{bar.get_height():.2f}s",  C["crimson"])
+
+        # Stagger labels so VRAM (solid) and latency (hatched) never overlap.
+        # VRAM: label inside bar near top; Latency: label above bar on right axis.
+        for bar in b3:
+            h = bar.get_height()
+            ax2.text(bar.get_x() + bar.get_width() / 2,
+                     max(h - 0.45, 0.1), f"{h:.2f}GB",
+                     ha="center", va="top", fontsize=8, fontweight="bold",
+                     color="white",
+                     bbox=dict(boxstyle="round,pad=0.15", facecolor="none",
+                               edgecolor="none"))
+        for bar in b4:
+            h = bar.get_height()
+            ax2r.text(bar.get_x() + bar.get_width() / 2,
+                      h + 0.12, f"{h:.2f}s",
+                      ha="center", va="bottom", fontsize=8, fontweight="bold",
+                      color=C["crimson"],
+                      bbox=dict(boxstyle="round,pad=0.15", facecolor="white",
+                                edgecolor="#DDAAAA", linewidth=0.7, alpha=1.0))
+
         ax2.axhline(4.0, color=C["red"], lw=2.0, ls="--", zorder=6)
         ax2.text(0.98, (4.0/11) + 0.02, "4 GB VRAM limit",
                  transform=ax2.transAxes, color=C["red"], fontsize=9,
@@ -611,7 +666,7 @@ class Suite2HallucinationMitigation:
 
         import pandas as pd
         df = pd.DataFrame({
-            "System": ["VLM Alone\n(No RAG)", "VLM + FAISS RAG\n(Ours)"],
+            "System": ["VLM Alone", "VLM + FAISS RAG"],
             "CHAIR":  [round(chair_a_pct, 1), round(chair_r_pct, 1)],
             "FCR":    [round(fcr_a_pct, 1),   round(fcr_r_pct, 1)],
         })
@@ -652,7 +707,7 @@ class Suite2HallucinationMitigation:
         ax1.set_ylabel("CHAIR Score (%) — lower = fewer hallucinations")
         ax1.set_xlabel("System"); ax1.set_title("(a) CHAIR Score  ↓ better")
         ax1.legend(handles=[mpatches.Patch(color=c, label=l) for c, l in
-                             zip(bar_c, ["VLM Alone", "VLM + FAISS RAG (Ours)"])],
+                             zip(bar_c, ["VLM Alone", "VLM + FAISS RAG"])],
                    loc="upper right", framealpha=1.0, edgecolor="#CCCCCC", fancybox=False)
         _hgrid(ax1); _panel_tag(ax1, "a")
 
@@ -671,7 +726,7 @@ class Suite2HallucinationMitigation:
         ax2.set_ylabel("Factual Consistency Rate (%) — higher = more grounded")
         ax2.set_xlabel("System"); ax2.set_title("(b) FCR  ↑ better")
         ax2.legend(handles=[mpatches.Patch(color=c, label=l) for c, l in
-                             zip(bar_c, ["VLM Alone", "VLM + FAISS RAG (Ours)"])],
+                             zip(bar_c, ["VLM Alone", "VLM + FAISS RAG"])],
                    loc="upper left", framealpha=1.0, edgecolor="#CCCCCC", fancybox=False)
         _hgrid(ax2); _panel_tag(ax2, "b")
 
@@ -730,13 +785,13 @@ class Suite3ClinicalInterpretability:
         import pandas as pd
         df = pd.DataFrame({
             "System":    [
-                f"Our Pipeline\n(3B+RAG+CoT)\n[REAL, n={n}]",
-                f"VLM Alone\n(No RAG)\n[REAL, n={n}]",
-                "LLaVA-Rad\n(7B Ref.)\n[Literature]",
-                "GPT-4V\n(Cloud Ref.)\n[Literature]",
+                f"QLoRA 3B\n+ RAG + CoT\n(n={n})",
+                f"QLoRA 3B\nNo RAG\n(n={n})",
+                "LLaVA-Rad 7B",
+                "GPT-4V",
             ],
             "BERTScore": [round(mean_rag, 3), round(mean_alone, 3), 0.762, 0.778],
-            "Source":    ["REAL", "REAL", "Literature", "Literature"],
+            "Source":    ["Measured", "Measured", "Published", "Published"],
         })
         self._plot(df, n, save)
 
@@ -754,8 +809,8 @@ class Suite3ClinicalInterpretability:
 
         fig, ax = plt.subplots(figsize=(12, 6.5), constrained_layout=True)
         fig.suptitle(
-            f"Suite 3 — Real BERTScore F1 vs. MIMIC-CXR Ground Truth (n={n})\n"
-            "First two bars = REAL model output. Last two = published literature references.",
+            f"Suite 3 — BERTScore F1 vs. MIMIC-CXR Ground Truth (n={n})\n"
+            "Bars 1–2: measured on this hardware.  Bars 3–4: published benchmarks.",
             fontsize=12, fontweight="bold",
         )
         bars = ax.bar(x, df["BERTScore"], w, color=bar_c,
@@ -764,21 +819,15 @@ class Suite3ClinicalInterpretability:
         for bar in bars:
             _val_label(ax, bar, f"{bar.get_height():.3f}", C["navy"])
 
-        # Real vs reference divider
+        # Vertical divider between measured and published benchmarks
         ax.axvline(1.5, color="#AAAAAA", lw=1.5, ls="--")
-        ax.text(0.38, 0.94, "Real Measurements",
-                transform=ax.transAxes, ha="center", fontsize=9,
+        # Divider labels placed on x-axis using bracket annotation — no overlap
+        ax.text(0.5, 0.22, "Measured", ha="center", va="bottom", fontsize=9,
                 color=C["navy"], fontweight="bold",
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                          edgecolor=C["navy"], linewidth=0.8, alpha=1.0))
-        ax.text(0.78, 0.94, "Literature References",
-                transform=ax.transAxes, ha="center", fontsize=9,
-                color=C["forest"], fontweight="bold",
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
-                          edgecolor=C["forest"], linewidth=0.8, alpha=1.0))
-
-        # "Our model" highlight
-        ax.axvspan(-0.55, 0.55, color=C["navy"], alpha=0.05, zorder=0)
+                transform=ax.get_xaxis_transform())
+        ax.text(2.5, 0.22, "Published benchmarks", ha="center", va="bottom",
+                fontsize=9, color=C["forest"], fontweight="bold",
+                transform=ax.get_xaxis_transform())
 
         ax.set_xticks(x); ax.set_xticklabels(df["System"], fontsize=9)
         ax.set_ylabel("BERTScore F1 (higher = more clinically accurate)")
@@ -864,15 +913,15 @@ class Suite4SycophancyRobustness:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6.5),
                                         constrained_layout=True)
         fig.suptitle(
-            f"Suite 4 — Real Adversarial Sycophancy Probe & OOD Robustness\n"
-            f"Sycophancy: n={n_syco} confirmed-NORMAL samples  |  OOD: n={n_pad} PadChest samples",
+            f"Suite 4 — Sycophancy Probe & OOD Robustness\n"
+            f"Sycophancy: n={n_syco} confirmed-normal samples  |  OOD: n={n_pad} PadChest samples",
             fontsize=12, fontweight="bold",
         )
 
-        # (a) Sycophancy FPR — ours vs literature references
-        systems  = ["Our Pipeline\n(3B+RAG+CoT)\n[REAL]",
-                    "VLM Alone\n(No RAG)\n[Lit. ref.]",
-                    "LLaVA-Rad 7B\n[Lit. ref.]"]
+        # (a) Sycophancy FPR
+        systems  = ["QLoRA 3B\n+ RAG + CoT",
+                    "VLM Alone",
+                    "LLaVA-Rad 7B"]
         fpr_vals = [fpr_ours * 100, 21.3, 8.9]
         bar_c    = [C["navy"], C["crimson"], C["forest"]]
         bar_e    = ["#0D1F3C", "#5C0A0A", "#0A2614"]
@@ -884,27 +933,27 @@ class Suite4SycophancyRobustness:
             _val_label(ax1, bar, f"{bar.get_height():.1f}%", C["navy"])
 
         ax1.axhspan(0, 10, color=C["green"], alpha=0.08, zorder=0)
-        ax1.text(0.97, 9/34 - 0.03, "Clinical safety zone (<10%)",
+        ax1.text(0.97, 9/34 - 0.03, "Clinical safety threshold (<10%)",
                  transform=ax1.transAxes, ha="right", va="top",
                  fontsize=8.5, color=C["green"], fontweight="bold",
                  bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
                            edgecolor=C["green"], linewidth=0.8, alpha=1.0))
 
-        ax1.axvline(0.5, color="#AAAAAA", lw=1.5, ls="--")
-        ax1.text(0, 0.95, "REAL", transform=ax1.transAxes,
-                 ha="left", fontsize=8, color=C["navy"], fontweight="bold",
-                 bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
-                           edgecolor=C["navy"], linewidth=0.7, alpha=1.0))
+        # Footnote below x-axis indicating which bars are measured vs published
+        ax1.text(0.5, -0.18,
+                 "Bar 1: measured  |  Bars 2–3: published benchmarks",
+                 transform=ax1.transAxes, ha="center", fontsize=8,
+                 color="#666666", fontstyle="italic")
 
         ax1.set_ylabel("False Positive Rate (%) — lower is clinically safer")
         ax1.set_xlabel("System")
-        ax1.set_title(f"(a) Adversarial Sycophancy Probe FPR\n(n={n_syco} confirmed-NORMAL X-rays)")
+        ax1.set_title(f"(a) Adversarial Sycophancy Probe FPR\n(n={n_syco} confirmed-normal X-rays)")
         _hgrid(ax1); _panel_tag(ax1, "a")
 
-        # (b) OOD Accuracy — ours vs literature
-        acc_systems = ["Our Pipeline\n(3B+RAG+CoT)\n[REAL]",
-                       "VLM Alone\n[Lit. ref.]",
-                       "LLaVA-Rad 7B\n[Lit. ref.]"]
+        # (b) OOD Accuracy
+        acc_systems = ["QLoRA 3B\n+ RAG + CoT",
+                       "VLM Alone",
+                       "LLaVA-Rad 7B"]
         acc_vals    = [acc_pad * 100, 76.9, 85.8]
 
         bars2 = ax2.bar(acc_systems, acc_vals, color=bar_c, edgecolor=bar_e,
@@ -913,11 +962,10 @@ class Suite4SycophancyRobustness:
         for bar in bars2:
             _val_label(ax2, bar, f"{bar.get_height():.1f}%", C["navy"])
 
-        ax2.axvline(0.5, color="#AAAAAA", lw=1.5, ls="--")
-        ax2.text(0, 0.95, "REAL", transform=ax2.transAxes,
-                 ha="left", fontsize=8, color=C["navy"], fontweight="bold",
-                 bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
-                           edgecolor=C["navy"], linewidth=0.7, alpha=1.0))
+        ax2.text(0.5, -0.18,
+                 "Bar 1: measured  |  Bars 2–3: published benchmarks",
+                 transform=ax2.transAxes, ha="center", fontsize=8,
+                 color="#666666", fontstyle="italic")
 
         ax2.set_ylabel("Diagnostic Accuracy (%) — higher is better")
         ax2.set_xlabel("System")
