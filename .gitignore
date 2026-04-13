@@ -42,3 +42,4 @@ Thumbs.db
 
 # Keep empty folders
 !**/.gitkeep
+models/visual_projector/checkpoint-*.ptmodels/qlora_adapters/meddiag_lora_vlm/checkpoint-*.pt
