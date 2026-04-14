@@ -823,47 +823,52 @@ class EdgeMedicalVLM:
         logger.info("Multimodal EdgeMedicalVLM ready.")
 
     # ── Feature C: multimodal diagnosis ───────────────────────────────────
+    # ── NEW: classification-mode prompts (must match Stage 2 training) ──
+    CLASSIFY_SYSTEM_PROMPT = (
+        "You are a radiology AI. Examine the chest X-ray and classify it as "
+        "NORMAL or ABNORMAL based solely on visual findings."
+    )
+    CLASSIFY_USER_PROMPT = "Classify this chest X-ray:"
+
     def generate_diagnosis(
         self,
         image:            Image.Image,
         findings_query:   str = "",
         clinical_history: str = "No clinical history provided.",
+        mode:             str = "classify",   # "classify" or "report"
     ) -> str:
         """
-        Generate a diagnostic report from a chest X-ray image.
-
-        Args:
-            image:            PIL X-ray image (any size, any mode — auto-converted).
-            findings_query:   Optional text used for FAISS retrieval only.
-                              If empty, a generic radiology query is used.
-                              (Does NOT get shown to the model as "findings".)
-            clinical_history: Optional doctor-provided history.
-
-        Returns:
-            Full CoT diagnostic report string.
+        mode="classify" — short NORMAL/ABNORMAL output (matches Stage 2 training).
+                          Use for Suite 1 evaluation.
+        mode="report"   — full CoT structured report.
+                          Use for Suites 2/3 (text quality evaluation).
         """
         if image is None:
-            raise ValueError(
-                "EdgeMedicalVLM requires an image. "
-                "Use src/pipeline_textonly.py for text-only workflows."
-            )
+            raise ValueError("EdgeMedicalVLM requires an image.")
         if not isinstance(image, Image.Image):
             raise TypeError(f"Expected PIL.Image.Image, got {type(image)}")
 
-        # 1. FAISS retrieval — uses findings text if given, else generic query
-        rag_query = findings_query.strip() or (
-            "chest radiograph interpretation findings consolidation "
-            "effusion cardiomegaly pneumothorax"
-        )
-        medical_context = self.rag.retrieve_as_string(rag_query)
+        # Pick prompts based on mode
+        if mode == "classify":
+            system_prompt = self.CLASSIFY_SYSTEM_PROMPT
+            user_msg      = self.CLASSIFY_USER_PROMPT
+            max_new       = 40          # short classification output
+        elif mode == "report":
+            rag_query = findings_query.strip() or (
+                "chest radiograph interpretation findings consolidation "
+                "effusion cardiomegaly pneumothorax"
+            )
+            medical_context = self.rag.retrieve_as_string(rag_query)
+            system_prompt = self.COT_SYSTEM_PROMPT
+            user_msg      = self.COT_USER_TEMPLATE.format(
+                medical_context=medical_context,
+                clinical_history=clinical_history,
+            )
+            max_new       = self.infer_cfg.max_new_tokens
+        else:
+            raise ValueError(f"Unknown mode: {mode}. Use 'classify' or 'report'.")
 
-        # 2. Build user prompt (NO findings text — model reads the image itself)
-        user_msg = self.COT_USER_TEMPLATE.format(
-            medical_context=medical_context,
-            clinical_history=clinical_history,
-        )
-
-        # 3. Build multimodal inputs_embeds (text + visual tokens)
+        # Build multimodal inputs
         self.visual_projector.eval()
         device = self.manager.model.device
         inputs_embeds, attention_mask = build_multimodal_inputs(
@@ -871,15 +876,14 @@ class EdgeMedicalVLM:
             tokenizer     = self.manager.tokenizer,
             projector     = self.visual_projector,
             pil_image     = image,
-            system_prompt = self.COT_SYSTEM_PROMPT,
+            system_prompt = system_prompt,
             user_prompt   = user_msg,
             device        = str(device),
         )
 
-        # 4. Generate
         from transformers import GenerationConfig
         gen_cfg = GenerationConfig(
-            max_new_tokens     = self.infer_cfg.max_new_tokens,
+            max_new_tokens     = max_new,
             do_sample          = False,
             repetition_penalty = self.infer_cfg.repetition_penalty,
             pad_token_id       = self.manager.tokenizer.eos_token_id,
@@ -893,17 +897,15 @@ class EdgeMedicalVLM:
 
         with torch.inference_mode():
             output_ids = self.manager.model.generate(
-                inputs_embeds  = inputs_embeds,
-                attention_mask = attention_mask,
+                inputs_embeds     = inputs_embeds,
+                attention_mask    = attention_mask,
                 generation_config = gen_cfg,
             )
 
-        # When inputs_embeds is used, generate() returns ONLY new tokens
         response = self.manager.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
         del inputs_embeds, attention_mask, output_ids
         self.manager._clear_memory()
-        self.manager._log_vram("After multimodal generation")
+        self.manager._log_vram(f"After multimodal generation ({mode})")
         return response
 
     # ── Feature D: sycophancy (now takes image) ───────────────────────────
